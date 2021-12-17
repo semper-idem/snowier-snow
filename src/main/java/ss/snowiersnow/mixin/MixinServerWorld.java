@@ -14,7 +14,9 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import ss.snowiersnow.state.SnowBlockState;
+import ss.snowiersnow.SnowierSnow;
+import ss.snowiersnow.block.SnowBlockHelper;
+import ss.snowiersnow.block.Snowloggable;
 
 import java.util.function.Supplier;
 
@@ -31,46 +33,42 @@ public abstract class MixinServerWorld extends World {
                     target = "Lnet/minecraft/world/biome/Biome;canSetSnow(Lnet/minecraft/world/WorldView;Lnet/minecraft/util/math/BlockPos;)Z",
                     ordinal = 0
             ),
-            method = "tickChunk")
+            method = "tickChunk"
+    )
     private void beforeCanSetSnow(WorldChunk chunk, int randomTickSpeed, CallbackInfo ci) {
         BlockPos pos = getRandomTopPos(chunk);
         BlockState blockState = this.getBlockState(pos);
-        if (canSetSnow(this, pos, blockState)){
+        if (SnowBlockHelper.canSetSnow(this, pos, blockState)){
             snow(pos, blockState);
         }
     }
 
-    private boolean canSetSnow(WorldView world, BlockPos pos,  BlockState blockState) {
-        if (!world.getBiome(pos).doesNotSnow(pos)) {
-            if (pos.getY() >= world.getBottomY() &&
-                pos.getY() < world.getTopY() &&
-                world.getLightLevel(LightType.BLOCK, pos) < 10)
-            {
-                return (blockState.isOf(Blocks.SNOW) || SnowBlockState.contains(blockState)) && Blocks.SNOW.getDefaultState().canPlaceAt(world, pos);
-            }
+    private void snow(BlockPos pos, BlockState blockState){
+        if (blockState.isAir()) {
+            this.setBlockState(pos, getSnowierBlock());
         }
-        return false;
+        else if (blockState.getBlock() instanceof SnowBlock) {
+            this.setBlockState(pos, blockState.with(SnowBlock.LAYERS, getNewLayers(blockState.get(SnowBlock.LAYERS))));
+        }
+        else {
+            this.setBlockState(pos, getSnowierBlock());
+            SnowierSnow.SNOW_BLOCK.setContent(this, pos, blockState);
+        }
     }
+
 
     private BlockPos getRandomTopPos(WorldChunk chunk){
         BlockPos randomTopBlock =  this.getTopPosition(
             Heightmap.Type.MOTION_BLOCKING,
-            this.getRandomPosInChunk(chunk.getPos().getStartX(), 0, chunk.getPos().getStartZ(), 15)
-        );
-        if (SnowBlockState.contains(chunk.getBlockState(randomTopBlock.down()))) {
-            return randomTopBlock.down();
-        }
-        return randomTopBlock;
+            this.getRandomPosInChunk(chunk.getPos().getStartX(), 0, chunk.getPos().getStartZ(), 15));
+        return Snowloggable.contains(chunk.getBlockState(randomTopBlock.down())) ?
+            randomTopBlock.down() :
+            randomTopBlock;
     }
 
-    //performance hit
-    private void snow(BlockPos pos, BlockState blockState){
-        if(blockState.getBlock() == Blocks.SNOW) {
-            this.setBlockState(pos, blockState.with(SnowBlock.LAYERS, getNewLayers(blockState.get(SnowBlock.LAYERS))));
-        } else {
-           this.setBlockState(pos, Blocks.SNOW.getDefaultState()
-               .with(SnowBlockState.CONTENT, SnowBlockState.get(blockState)));
-        }
+
+    private BlockState getSnowierBlock() {
+        return SnowierSnow.SNOW_BLOCK.getDefaultState();
     }
 
     private int getNewLayers(int currentLayers) {

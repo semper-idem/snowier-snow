@@ -14,6 +14,9 @@
   "entrypoints": {
     "main": [
       "ss.snowiersnow.SnowierSnow"
+    ],
+    "client": [
+      "ss.snowiersnow.SnowierSnowClient"
     ]
   },
   "mixins": [
