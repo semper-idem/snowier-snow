@@ -4,22 +4,20 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.util.Clearable;
+import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
-import ss.snowiersnow.SnowierSnow;
+import ss.snowiersnow.initializers.SnowierSnow;
 
-public class SnowBlockEntity extends BlockEntity implements Clearable {
+public class SnowierBlockEntity extends BlockEntity implements Clearable {
     private static final String contentTagName = "rawStateId";
     private BlockState content = Blocks.AIR.getDefaultState();
 
-    public SnowBlockEntity(BlockPos pos, BlockState state) {
+    public SnowierBlockEntity(BlockPos pos, BlockState state) {
         super(SnowierSnow.SNOW_BE, pos, state);
-    }
-    public SnowBlockEntity(BlockPos pos, BlockState state, BlockState content) {
-        super(SnowierSnow.SNOW_BE, pos, state);
-        this.content = content;
     }
 
     public void setContent(BlockState state) {
@@ -27,12 +25,11 @@ public class SnowBlockEntity extends BlockEntity implements Clearable {
         this.updateListeners();
     }
 
-    public static void setContent(SnowBlockEntity entity) {
-        entity.content = getAir();
-    }
-
     public BlockState getContent() {
-        return content;
+        if (content != null) {
+            return content;
+        }
+        return Blocks.AIR.getDefaultState();
     }
 
     @Override
@@ -80,7 +77,7 @@ public class SnowBlockEntity extends BlockEntity implements Clearable {
 
     @Override
     public void clear() {
-        this.content = getAir();
+        this.content = null;
     }
 
     private void updateListeners() {

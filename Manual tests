@@ -1,0 +1,14 @@
+1. World gen
+
+2. Snowing (weather rain)
+
+3. Right click
+//todo
+
+
+Scenarios to check
+
+Non-growing plant blocks(Poppy, grass)
+- route A(dynamic) - only lets stay if block below is dirt)
+- route B(static) - is "frozen" in snow does not care about dirt
+

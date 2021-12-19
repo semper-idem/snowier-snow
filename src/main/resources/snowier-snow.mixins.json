@@ -4,9 +4,11 @@
   "package": "ss.snowiersnow.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "MixinBiome",
-    "MixinFreezeTopLayerFeature",
-    "MixinServerWorld"
+    "BiomeMixin",
+    "FenceBlockMixin",
+    "FreezeTopLayerFeatureMixin",
+    "ServerWorldMixin",
+    "SnowBlockMixin"
   ],
   "client": [
   ],

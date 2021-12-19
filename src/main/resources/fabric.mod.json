@@ -13,10 +13,10 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "ss.snowiersnow.SnowierSnow"
+      "ss.snowiersnow.initializers.SnowierSnow"
     ],
     "client": [
-      "ss.snowiersnow.SnowierSnowClient"
+      "ss.snowiersnow.initializers.SnowierSnowClient"
     ]
   },
   "mixins": [

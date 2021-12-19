@@ -14,12 +14,12 @@ import net.minecraft.world.gen.feature.FreezeTopLayerFeature;
 import net.minecraft.world.gen.feature.util.FeatureContext;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
-import ss.snowiersnow.SnowierSnow;
-import ss.snowiersnow.block.SnowBlockHelper;
-import ss.snowiersnow.block.Snowloggable;
+import ss.snowiersnow.initializers.SnowierSnow;
+import ss.snowiersnow.biome.BiomeHelper;
+import ss.snowiersnow.block.helper.Snowloggable;
 
 @Mixin(FreezeTopLayerFeature.class)
-public class MixinFreezeTopLayerFeature {
+public class FreezeTopLayerFeatureMixin {
 
     /**
      * @author snowier-snow akio
@@ -31,7 +31,6 @@ public class MixinFreezeTopLayerFeature {
         BlockPos.Mutable mutable = new BlockPos.Mutable();
         BlockPos.Mutable mutable2 = new BlockPos.Mutable();
 
-        //NOT TESTED AT ALL
         for(int i = 0; i < 16; ++i) {
             for(int j = 0; j < 16; ++j) {
                 int k = blockPos.getX() + i;
@@ -45,10 +44,10 @@ public class MixinFreezeTopLayerFeature {
                 }
 
                 BlockState blockState = structureWorldAccess.getBlockState(mutable2);
-                if (SnowBlockHelper.canSetSnow(structureWorldAccess, mutable, blockState)) {
+                if (BiomeHelper.canSetSnow(structureWorldAccess, mutable, blockState)) {
                     structureWorldAccess.setBlockState(mutable2, SnowierSnow.SNOW_BLOCK.getDefaultState(), Block.NOTIFY_LISTENERS);
                     if (Snowloggable.contains(blockState)) {
-                        SnowierSnow.SNOW_BLOCK.setContent(structureWorldAccess, mutable2, blockState);
+                        Snowloggable.setContent(structureWorldAccess, mutable2, blockState);
                     }
                     if (blockState.contains(SnowyBlock.SNOWY)) {
                         structureWorldAccess.setBlockState(mutable2, (BlockState)blockState.with(SnowyBlock.SNOWY, true), Block.NOTIFY_LISTENERS);

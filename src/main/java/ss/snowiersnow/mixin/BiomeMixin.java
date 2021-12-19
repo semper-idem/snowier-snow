@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Biome.class)
-public class MixinBiome {
+public class BiomeMixin {
 
     /**
      * Override vanilla snowfall by always returning false

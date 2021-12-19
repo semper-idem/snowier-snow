@@ -1,7 +1,6 @@
 package ss.snowiersnow.mixin;
 
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.block.SnowBlock;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -14,16 +13,16 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import ss.snowiersnow.SnowierSnow;
-import ss.snowiersnow.block.SnowBlockHelper;
-import ss.snowiersnow.block.Snowloggable;
+import ss.snowiersnow.initializers.SnowierSnow;
+import ss.snowiersnow.biome.BiomeHelper;
+import ss.snowiersnow.block.helper.Snowloggable;
 
 import java.util.function.Supplier;
 
 @Mixin(ServerWorld.class)
-public abstract class MixinServerWorld extends World {
+public abstract class ServerWorldMixin extends World {
 
-    public MixinServerWorld(MutableWorldProperties properties, RegistryKey<World> registryRef, DimensionType dimensionType, Supplier<Profiler> profiler, boolean isClient, boolean debugWorld, long seed) {
+    public ServerWorldMixin(MutableWorldProperties properties, RegistryKey<World> registryRef, DimensionType dimensionType, Supplier<Profiler> profiler, boolean isClient, boolean debugWorld, long seed) {
         super(properties, registryRef, dimensionType, profiler, isClient, debugWorld, seed);
     }
 
@@ -38,7 +37,7 @@ public abstract class MixinServerWorld extends World {
     private void beforeCanSetSnow(WorldChunk chunk, int randomTickSpeed, CallbackInfo ci) {
         BlockPos pos = getRandomTopPos(chunk);
         BlockState blockState = this.getBlockState(pos);
-        if (SnowBlockHelper.canSetSnow(this, pos, blockState)){
+        if (BiomeHelper.canSetSnow(this, pos, blockState)){
             snow(pos, blockState);
         }
     }
@@ -52,7 +51,7 @@ public abstract class MixinServerWorld extends World {
         }
         else {
             this.setBlockState(pos, getSnowierBlock());
-            SnowierSnow.SNOW_BLOCK.setContent(this, pos, blockState);
+            Snowloggable.setContent(this, pos, blockState);
         }
     }
 
