@@ -29,11 +29,8 @@ public class AbstractBlockMixin {
 
     @Inject(method = "onUse", at = @At("HEAD"), cancellable = true)
     private void onUseHook(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit, CallbackInfoReturnable<ActionResult> cir) {
-        System.out.println(state);
         state = world.getBlockState(pos); // for atm unknown reason after setting snowlayer old state is preserved
-        System.out.println(state);
         if (Snowloggable.canContain(state)) {
-            System.out.println("cancontain");
             ActionResult result = addSnowLayer(state, world, pos, player, hand, hit);
             if (result != ActionResult.PASS) {
                 cir.setReturnValue(result);

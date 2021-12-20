@@ -61,6 +61,10 @@ public class SnowierBlock extends SnowBlock implements ISnowierBlock {
 
     @Override
     public boolean canReplace(BlockState state, ItemPlacementContext context) {
+        BlockState content = getContentState(context.getWorld(),state, context.getBlockPos());
+        if (content.getBlock().asItem() == context.getStack().getItem()) {
+            return content.getBlock().canReplace(content, context);
+        }
         int i = state.get(ISnowierBlock.LAYERS);
         if (context.getStack().isOf(this.asItem()) && i < 8) {
             if (context.canReplaceExisting() && state.getBlock() == SnowierSnow.SNOW_BLOCK) {

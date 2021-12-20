@@ -212,11 +212,13 @@ public interface ISnowierBlock extends BlockEntityProvider {
         if (state.getBlock() == SnowierSnow.SNOW_BLOCK) {
             if (state.get(ISnowierBlock.LAYERS) <= 2) {
                 if((result = getContentState(world, state, pos).onUse(world, player, hand, hit)) != ActionResult.PASS) {
+                    System.out.println("here");
                     world.emitGameEvent(player, GameEvent.BLOCK_CHANGE, pos);
                     return result;
                 }
             }
             if((result = onShovel(state, world, pos, player, hand)) != ActionResult.PASS) {
+                System.out.println("here2");
                 return result;
             }
         }
