@@ -3,62 +3,43 @@ package ss.snowiersnow.block.helper;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldView;
-import ss.snowiersnow.block.SnowierBlockEntity;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 
-public enum Snowloggable {
-    DANDELION(Blocks.DANDELION),
-    OAK_FENCE(Blocks.OAK_FENCE),
-    OAK_FENCE_GATE(Blocks.OAK_FENCE_GATE),
-    POPPY(Blocks.POPPY);
-
-    Block block;
-    Snowloggable(Block block) {
-        this.block = block;
+public class Snowloggable {
+    private static final ArrayList<Block> snowloggableBlock = new ArrayList<>();
+    /*
+     check all rc hitbox
+     bambo sugar sunflower check top level
+     growing blocks bumbo sugar melon stem
+     anvil/grindstone usage
+     turtleegg onstep
+     berrybush dmg
+     oak sign message
+    *
+    *
+    * */
+    static {
+        snowloggableBlock.add(Blocks.POPPY);
+        snowloggableBlock.add(Blocks.BAMBOO);
+        snowloggableBlock.add(Blocks.SUGAR_CANE);
+        snowloggableBlock.add(Blocks.SUNFLOWER);
+        snowloggableBlock.add(Blocks.MELON_STEM);
+        snowloggableBlock.add(Blocks.ANVIL);
+        snowloggableBlock.add(Blocks.GRINDSTONE);
+        snowloggableBlock.add(Blocks.TURTLE_EGG);
+        snowloggableBlock.add(Blocks.PLAYER_HEAD);
+        snowloggableBlock.add(Blocks.SWEET_BERRY_BUSH);
+        snowloggableBlock.add(Blocks.OAK_FENCE_GATE);
+        snowloggableBlock.add(Blocks.OAK_FENCE);
+        snowloggableBlock.add(Blocks.OAK_SIGN);
     }
 
-    public static boolean contains(BlockState state) {
-        return contains(state.getBlock());
+    public static boolean canContain(BlockState state) {
+        return canContain(state.getBlock());
     }
 
-    public static boolean contains(Block block) {
-        return Arrays.stream(values()).anyMatch(snowloggable -> snowloggable.block == block);
-    }
-
-    public static void setContent(WorldView world, BlockPos pos, BlockState content){
-        BlockEntity blockEntity = world.getBlockEntity(pos);
-        if (blockEntity instanceof SnowierBlockEntity) {
-            ((SnowierBlockEntity) blockEntity).setContent(content);
-        }
-    }
-
-    public static BlockState getContent(BlockView world, BlockPos pos){
-        BlockEntity blockEntity = world.getBlockEntity(pos);
-        if (blockEntity instanceof SnowierBlockEntity) {
-            return ((SnowierBlockEntity)blockEntity).getContent();
-        }
-        return Blocks.AIR.getDefaultState();
-    }
-
-    public static boolean isEmpty(BlockView world, BlockPos pos){
-        BlockEntity blockEntity = world.getBlockEntity(pos);
-        System.out.println(blockEntity);
-        if (blockEntity instanceof SnowierBlockEntity) {
-            return ((SnowierBlockEntity)blockEntity).isEmpty();
-        }
-        return true;
-    }
-
-    public static void clear(WorldView world, BlockPos pos) {
-        BlockEntity blockEntity = world.getBlockEntity(pos);
-        if (blockEntity instanceof SnowierBlockEntity) {
-            ((SnowierBlockEntity)blockEntity).clear();
-        }
+    public static boolean canContain(Block block) {
+        return snowloggableBlock.contains(block);
     }
 }

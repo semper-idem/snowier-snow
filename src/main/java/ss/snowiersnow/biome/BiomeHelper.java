@@ -5,6 +5,7 @@ import net.minecraft.block.SnowBlock;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.LightType;
 import net.minecraft.world.WorldView;
+import ss.snowiersnow.block.ISnowierBlock;
 import ss.snowiersnow.initializers.SnowierSnow;
 import ss.snowiersnow.block.helper.Snowloggable;
 
@@ -35,7 +36,7 @@ public class BiomeHelper {
     }
 
     private static boolean isSnowOrSnowloggable(BlockState state) {
-        return state.getBlock() instanceof SnowBlock || Snowloggable.contains(state);
+        return state.getBlock() instanceof ISnowierBlock || Snowloggable.canContain(state);
     }
 
     private static boolean canPlaceAt(WorldView world, BlockPos pos) {

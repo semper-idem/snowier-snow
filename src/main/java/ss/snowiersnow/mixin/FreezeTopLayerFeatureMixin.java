@@ -46,14 +46,11 @@ public class FreezeTopLayerFeatureMixin {
                 BlockState blockState = structureWorldAccess.getBlockState(mutable2);
                 if (BiomeHelper.canSetSnow(structureWorldAccess, mutable, blockState)) {
                     structureWorldAccess.setBlockState(mutable2, SnowierSnow.SNOW_BLOCK.getDefaultState(), Block.NOTIFY_LISTENERS);
-                    if (Snowloggable.contains(blockState)) {
-                        Snowloggable.setContent(structureWorldAccess, mutable2, blockState);
-                    }
+                    SnowierSnow.SNOW_BLOCK.addSnowLayer(structureWorldAccess, blockState, mutable2, false, false);
                     if (blockState.contains(SnowyBlock.SNOWY)) {
-                        structureWorldAccess.setBlockState(mutable2, (BlockState)blockState.with(SnowyBlock.SNOWY, true), Block.NOTIFY_LISTENERS);
+                        structureWorldAccess.setBlockState(mutable2, blockState.with(SnowyBlock.SNOWY, true), Block.NOTIFY_LISTENERS);
                     }
                 }
-
             }
         }
         return true;

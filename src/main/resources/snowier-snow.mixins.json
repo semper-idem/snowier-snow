@@ -4,6 +4,7 @@
   "package": "ss.snowiersnow.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "AbstractBlockMixin",
     "BiomeMixin",
     "FenceBlockMixin",
     "FreezeTopLayerFeatureMixin",

@@ -1,9 +1,28 @@
-1. World gen
+1. World
+    - outline shape
+        - with content
+        - without content
+    - colision shape
+        - 1 layers
+        - 2 layers
+        - 5 layers
+        - 8 layers
+        - with content
+        - without content
+        - walk
+        - jump
+        - fall
 
 2. Snowing (weather rain)
-
+    - snow falls on ground
+    - snow falls on snowloggable
+    - snow accumulate on itself
+    - snow accumulate on snowloggable
 3. Right click
-//todo
+    - right click ground
+    - right click snowloggable
+    - right click snowierblock with content
+    - right click snowierblock without content * check for collision
 
 
 Scenarios to check

@@ -13,6 +13,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import ss.snowiersnow.block.ISnowierBlock;
 import ss.snowiersnow.initializers.SnowierSnow;
 import ss.snowiersnow.biome.BiomeHelper;
 import ss.snowiersnow.block.helper.Snowloggable;
@@ -36,48 +37,30 @@ public abstract class ServerWorldMixin extends World {
     )
     private void beforeCanSetSnow(WorldChunk chunk, int randomTickSpeed, CallbackInfo ci) {
         BlockPos pos = getRandomTopPos(chunk);
-        BlockState blockState = this.getBlockState(pos);
-        if (BiomeHelper.canSetSnow(this, pos, blockState)){
-            snow(pos, blockState);
+        BlockState state = this.getBlockState(pos);
+        if (BiomeHelper.canSetSnow(this, pos, state)){
+            setOrAccumulateSnow(pos, state);
         }
     }
 
-    private void snow(BlockPos pos, BlockState blockState){
-        if (blockState.isAir()) {
-            this.setBlockState(pos, getSnowierBlock());
-        }
-        else if (blockState.getBlock() instanceof SnowBlock) {
-            this.setBlockState(pos, blockState.with(SnowBlock.LAYERS, getNewLayers(blockState.get(SnowBlock.LAYERS))));
-        }
-        else {
-            this.setBlockState(pos, getSnowierBlock());
-            Snowloggable.setContent(this, pos, blockState);
-        }
+    private void setOrAccumulateSnow(BlockPos pos, BlockState state){
+        SnowierSnow.SNOW_BLOCK.addSnowLayer(this, state, pos, shouldAccumulate(state), true);
     }
 
+    private boolean shouldAccumulate(BlockState state){
+        if (state.getBlock() instanceof ISnowierBlock) {
+            int layers = state.get(SnowBlock.LAYERS);
+            return Math.random() < ( 1f / (1 + (layers * 4)));
+        }
+        return false;
+    }
 
     private BlockPos getRandomTopPos(WorldChunk chunk){
         BlockPos randomTopBlock =  this.getTopPosition(
             Heightmap.Type.MOTION_BLOCKING,
             this.getRandomPosInChunk(chunk.getPos().getStartX(), 0, chunk.getPos().getStartZ(), 15));
-        return Snowloggable.contains(chunk.getBlockState(randomTopBlock.down())) ?
+        return Snowloggable.canContain(chunk.getBlockState(randomTopBlock.down())) ?
             randomTopBlock.down() :
             randomTopBlock;
-    }
-
-
-    private BlockState getSnowierBlock() {
-        return SnowierSnow.SNOW_BLOCK.getDefaultState();
-    }
-
-    private int getNewLayers(int currentLayers) {
-        if(currentLayers < 6 && shouldAddLayer(currentLayers)) {
-            return currentLayers + 1;
-        }
-        return currentLayers;
-    }
-
-    private boolean shouldAddLayer(int layers){
-        return Math.random() < ( 1f / (1 + (layers * 4))); // 20 > 15 > 10 > 5 > 0
     }
 }
