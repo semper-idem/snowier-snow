@@ -10,7 +10,8 @@
     "FreezeTopLayerFeatureMixin",
     "ServerWorldMixin",
     "SnowBlockMixin",
-    "SugarCaneBlockMixin"
+    "SugarCaneBlockMixin",
+    "TallPlantBlockMixin"
   ],
   "client": [
   ],

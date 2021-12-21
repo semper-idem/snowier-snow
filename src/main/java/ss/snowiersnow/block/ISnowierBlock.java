@@ -107,22 +107,26 @@ public interface ISnowierBlock extends BlockEntityProvider {
         if (state.getBlock() instanceof ISnowierBlock && accumulate) {
             int layers = state.get(LAYERS);
             if (layers < 8) {
-                world.setBlockState(pos, state.with(LAYERS, layers + 1), Block.NOTIFY_LISTENERS);
-                playSound(world, pos, shouldPlaySound);
-                return true;
+                if (state.canPlaceAt(world, pos)) {
+                    world.setBlockState(pos, state.with(LAYERS, layers + 1), Block.NOTIFY_LISTENERS);
+                    playSound(world, pos, shouldPlaySound);
+                    return true;
+                }
             } else {
                 return addSnowLayer(world, world.getBlockState(pos.up()), pos.up(), false, shouldPlaySound);
             }
         } else if (state.isAir() || Snowloggable.canContain(state)) {
-            world.setBlockState(pos, SnowierSnow.SNOW_BLOCK.getDefaultState(), Block.NOTIFY_LISTENERS);
-            if (!state.isAir()) {
-                BlockEntity blockEntity = world.getBlockEntity(pos);
-                if (blockEntity instanceof SnowierBlockEntity) {
-                    ((SnowierBlockEntity) blockEntity).setContentState(state);
+            if (state.canPlaceAt(world, pos)) {
+                world.setBlockState(pos, SnowierSnow.SNOW_BLOCK.getDefaultState(), Block.NOTIFY_LISTENERS);
+                if (!state.isAir()) {
+                    BlockEntity blockEntity = world.getBlockEntity(pos);
+                    if (blockEntity instanceof SnowierBlockEntity) {
+                        ((SnowierBlockEntity) blockEntity).setContentState(state);
+                    }
                 }
+                playSound(world, pos, shouldPlaySound);
+                return true;
             }
-            playSound(world, pos, shouldPlaySound);
-            return true;
         }
         return false;
     }

@@ -84,12 +84,19 @@ public class SnowierBlock extends SnowBlock implements ISnowierBlock {
             if (snowierBlockEntity.isPresent()) {
                 BlockState content = snowierBlockEntity.get().getContentState();
                 if (!content.isAir()) {
+                    if (content.getBlock() instanceof TallPlantBlock) {
+                        world.setBlockState(pos.up(), Blocks.AIR.getDefaultState());
+                    }
                     if (content.getHardness(world, pos) < state.getHardness(world, pos)) {
                         ItemScatterer.spawn(world, pos.getX(), pos.getY(), pos.getZ(), new ItemStack(content.getBlock()));
                         snowierBlockEntity.get().clear();
-                        world.setBlockState(pos, state);
+                        if (state.canPlaceAt(world, pos)) {
+                            world.setBlockState(pos, state);
+                        }
                     } else {
-                        world.setBlockState(pos, content);
+                        if (content.canPlaceAt(world, pos)) {
+                            world.setBlockState(pos, content);
+                        }
                     }
                 }
             }

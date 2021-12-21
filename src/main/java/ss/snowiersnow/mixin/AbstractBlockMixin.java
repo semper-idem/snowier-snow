@@ -45,18 +45,20 @@ public class AbstractBlockMixin {
             if (state.getBlock() instanceof ISnowierBlock) {
                 return SnowierSnow.SNOW_BLOCK.onUse(state, world, pos, player, hand, hit);
             }
-            world.setBlockState(pos, SnowierSnow.SNOW_BLOCK.getDefaultState(), Block.NOTIFY_LISTENERS);
-            Optional<SnowierBlockEntity> snowierBlockEntity = world.getBlockEntity(pos, SnowierSnow.SNOW_BE);
-            if (snowierBlockEntity.isPresent()) {
-                if (snowierBlockEntity.get().getContentState().isAir()) {
-                    snowierBlockEntity.get().setContentState(state);
+            if (SnowierSnow.SNOW_BLOCK.getDefaultState().canPlaceAt(world, pos)) {
+                world.setBlockState(pos, SnowierSnow.SNOW_BLOCK.getDefaultState(), Block.NOTIFY_LISTENERS);
+                Optional<SnowierBlockEntity> snowierBlockEntity = world.getBlockEntity(pos, SnowierSnow.SNOW_BE);
+                if (snowierBlockEntity.isPresent()) {
+                    if (snowierBlockEntity.get().getContentState().isAir()) {
+                        snowierBlockEntity.get().setContentState(state);
+                    }
                 }
+                if (!player.isCreative()) {
+                    stackInHand.decrement(1);
+                }
+                world.emitGameEvent(player, GameEvent.BLOCK_CHANGE, pos);
+                return ActionResult.success(world.isClient);
             }
-            if (!player.isCreative()) {
-                stackInHand.decrement(1);
-            }
-            world.emitGameEvent(player, GameEvent.BLOCK_CHANGE, pos);
-            return ActionResult.success(world.isClient);
         }
         return ActionResult.PASS;
     }

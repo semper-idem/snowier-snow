@@ -32,7 +32,6 @@ public class SugarCaneBlockMixin extends Block {
      */
     @Overwrite
     public void scheduledTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
-        System.out.println(state);
         if (!state.canPlaceAt(world, pos)) {
             world.breakBlock(pos, true);
         }

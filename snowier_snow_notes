@@ -1,3 +1,4 @@
+Testing notes:
 1. World
     - outline shape
         - with content
@@ -26,8 +27,22 @@
 
 
 Scenarios to check
-
 Non-growing plant blocks(Poppy, grass)
 - route A(dynamic) - only lets stay if block below is dirt)
 - route B(static) - is "frozen" in snow does not care about dirt
 
+
+TODO:
+ - refactor getting of content/check if empty etc.
+ - general refactor afterwards
+
+
+FEATURES:
+ - make all desired blocks work as static
+ - add "frozen" textures
+ - make snow particles bringers maybe even C00lER 8)?
+
+LAST THING I DID:
+- fixed most of the bugs with tall plants/sunflower needs more testing
+NEXT THING TO DO:
+- test more sunflower scenario/ next block bamboo?
