@@ -14,9 +14,9 @@ import net.minecraft.world.gen.feature.FreezeTopLayerFeature;
 import net.minecraft.world.gen.feature.util.FeatureContext;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
-import ss.snowiersnow.initializers.SnowierSnow;
-import ss.snowiersnow.biome.BiomeHelper;
-import ss.snowiersnow.block.helper.Snowloggable;
+import ss.snowiersnow.utils.BiomeHelper;
+import ss.snowiersnow.block.ModBlocks;
+import ss.snowiersnow.utils.SnowHelper;
 
 @Mixin(FreezeTopLayerFeature.class)
 public class FreezeTopLayerFeatureMixin {
@@ -45,8 +45,7 @@ public class FreezeTopLayerFeatureMixin {
 
                 BlockState blockState = structureWorldAccess.getBlockState(mutable2);
                 if (BiomeHelper.canSetSnow(structureWorldAccess, mutable, blockState)) {
-                    structureWorldAccess.setBlockState(mutable2, SnowierSnow.SNOW_BLOCK.getDefaultState(), Block.NOTIFY_LISTENERS);
-                    SnowierSnow.SNOW_BLOCK.addSnowLayer(structureWorldAccess, blockState, mutable2, false, false);
+                    SnowHelper.setOrStackSnow(structureWorldAccess, mutable2);
                     if (blockState.contains(SnowyBlock.SNOWY)) {
                         structureWorldAccess.setBlockState(mutable2, blockState.with(SnowyBlock.SNOWY, true), Block.NOTIFY_LISTENERS);
                     }

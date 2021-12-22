@@ -42,7 +42,41 @@ FEATURES:
  - add "frozen" textures
  - make snow particles bringers maybe even C00lER 8)?
 
+
+
+//ALL FUTURE SNOWLOGGABLE BLOCKS
+-Anvil
+-Grindstone
+-Buttons
+-Lever
+-Preasure Plates
+-Fence Gates
+-Fence
+-Wall
+-Pane
+-Flower Pot?
+-Chain
+-Coral
+-Static Plants
+-Double Static Plants
+-Crops
+-Sugar Cane
+-Saplings
+-Bamboo
+-Berry Bush
+
+TODO-FIRST-ITERATION
+-Static plants
+-Double static plants
+-Berry Bush
+-Bambooo
+-Sugar Cane
+-Saplings
+
+
+
 LAST THING I DID:
-- fixed most of the bugs with tall plants/sunflower needs more testing
+- fixed "topblock"
 NEXT THING TO DO:
-- test more sunflower scenario/ next block bamboo?
+- implement faster solution to "topblock" problem
+- implement sapling, test berrybush

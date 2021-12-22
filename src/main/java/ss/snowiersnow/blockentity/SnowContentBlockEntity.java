@@ -1,4 +1,4 @@
-package ss.snowiersnow.block;
+package ss.snowiersnow.blockentity;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -8,26 +8,25 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.util.Clearable;
 import net.minecraft.util.math.BlockPos;
-import ss.snowiersnow.initializers.SnowierSnow;
+import net.minecraft.world.World;
+import ss.snowiersnow.SnowierSnow;
+import ss.snowiersnow.block.ModBlocks;
 
-public class SnowierBlockEntity extends BlockEntity implements Clearable {
+public class SnowContentBlockEntity extends BlockEntity implements Clearable {
     public static final String contentTagName = "rawStateId";
     private BlockState content = Blocks.AIR.getDefaultState();
 
-    public SnowierBlockEntity(BlockPos pos, BlockState state) {
-        super(SnowierSnow.SNOW_BE, pos, state);
+    public SnowContentBlockEntity(BlockPos pos, BlockState state) {
+        super(ModBlocks.SNOW_BLOCK_ENTITY, pos, state);
     }
 
-    public void setContentState(BlockState state) {
+    public void setContent(BlockState state) {
         this.content = state;
         this.updateListeners();
     }
 
-    public BlockState getContentState() {
-        if (content != null) {
-            return content;
-        }
-        return Blocks.AIR.getDefaultState();
+    public BlockState getContent() {
+        return content != null ? content : Blocks.AIR.getDefaultState();
     }
 
     @Override
@@ -50,10 +49,6 @@ public class SnowierBlockEntity extends BlockEntity implements Clearable {
         return Block.getStateFromRawId(id);
     }
 
-    private static BlockState getAir() {
-        return Blocks.AIR.getDefaultState();
-    }
-
     public BlockEntityUpdateS2CPacket toUpdatePacket() {
         return BlockEntityUpdateS2CPacket.create(this);
     }
@@ -64,17 +59,17 @@ public class SnowierBlockEntity extends BlockEntity implements Clearable {
         return tag;
     }
 
-    public boolean isEmpty(){
-        return this.content == null || this.content.isAir();
-    }
-
     @Override
     public void clear() {
-        this.content = null;
+        this.content = Blocks.AIR.getDefaultState();
+        updateListeners();
     }
 
     private void updateListeners() {
         this.markDirty();
-        this.getWorld().updateListeners(this.getPos(), this.getCachedState(), this.getCachedState(), Block.NOTIFY_ALL);
+        World world = this.getWorld();
+        if (world != null){
+            world.updateListeners(this.getPos(), this.getCachedState(), this.getCachedState(), Block.NOTIFY_ALL);
+        }
     }
 }

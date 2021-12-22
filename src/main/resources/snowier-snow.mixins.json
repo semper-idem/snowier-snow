@@ -5,8 +5,8 @@
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "AbstractBlockMixin",
+    "BambooBlockMixin",
     "BiomeMixin",
-    "FenceBlockMixin",
     "FreezeTopLayerFeatureMixin",
     "ServerWorldMixin",
     "SnowBlockMixin",

@@ -1,24 +1,22 @@
-package ss.snowiersnow.biome;
+package ss.snowiersnow.utils;
 
 import net.minecraft.block.BlockState;
-import net.minecraft.block.SnowBlock;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.LightType;
 import net.minecraft.world.WorldView;
-import ss.snowiersnow.block.ISnowierBlock;
-import ss.snowiersnow.initializers.SnowierSnow;
-import ss.snowiersnow.block.helper.Snowloggable;
+import ss.snowiersnow.block.ISnowVariant;
+import ss.snowiersnow.block.ModBlocks;
 
 public class BiomeHelper {
     public static boolean canSetSnow(WorldView world, BlockPos pos, BlockState state) {
-        if (!doesNotSnow(world, pos)) {
-            if (withinWorldHeight(world, pos)) {
-                if (withinLightLimit(world, pos)) {
-                    if (isSnowOrSnowloggable(state) || state.isAir()) {
-                        return canPlaceAt(world, pos);
+            if (!doesNotSnow(world, pos)) {
+                if (withinWorldHeight(world, pos)) {
+                    if (withinLightLimit(world, pos)) {
+                        if (isSnowOrSnowloggable(state) || state.isAir()) {
+                            return canPlaceAt(world, pos);
+                        }
                     }
                 }
-            }
         }
         return false;
     }
@@ -36,10 +34,10 @@ public class BiomeHelper {
     }
 
     private static boolean isSnowOrSnowloggable(BlockState state) {
-        return state.getBlock() instanceof ISnowierBlock || Snowloggable.canContain(state);
+        return state.getBlock() instanceof ISnowVariant || SnowHelper.canContain(state);
     }
 
     private static boolean canPlaceAt(WorldView world, BlockPos pos) {
-        return SnowierSnow.SNOW_BLOCK.getDefaultState().canPlaceAt(world, pos);
+        return ModBlocks.SNOW_BLOCK.getDefaultState().canPlaceAt(world, pos);
     }
 }
