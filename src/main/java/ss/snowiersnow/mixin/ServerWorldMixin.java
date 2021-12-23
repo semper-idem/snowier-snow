@@ -64,12 +64,11 @@ public abstract class ServerWorldMixin extends World {
         //TODO test performance, maybe implement new heightmap type, future config option candidate !HashMap BlockState/chance to pass hardcoded or at start
         if (!chunk.getBlockState(randomTopBlock).isFullCube(chunk, randomTopBlock)) {
             for (int y = randomTopBlock.getY(); y > chunk.getBottomY(); y--){
-                BlockState topBlockState = chunk.getBlockState(randomTopBlock.down());
+                randomTopBlock = randomTopBlock.down();
+                BlockState topBlockState = chunk.getBlockState(randomTopBlock);
                 Block topBlock = topBlockState.getBlock();
-                if(topBlock instanceof StairsBlock || topBlock instanceof SlabBlock || Block.isShapeFullCube(topBlockState.getCollisionShape(chunk, randomTopBlock))) {
+                if(topBlock instanceof StairsBlock || topBlock instanceof SlabBlock || topBlockState.isSolidBlock(chunk, randomTopBlock)) {
                     break;
-                } else {
-                    randomTopBlock = randomTopBlock.down();
                 }
             }
         }
