@@ -7,8 +7,8 @@ import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.WorldAccess;
+import net.minecraft.world.WorldEvents;
 import net.minecraft.world.chunk.WorldChunk;
-import ss.snowiersnow.block.DefaultSnowBlock;
 import ss.snowiersnow.block.ISnowVariant;
 import ss.snowiersnow.block.ModBlocks;
 import ss.snowiersnow.blockentity.SnowContentBlockEntity;
@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class SnowHelper {
-    private static final HashMap<Block, DefaultSnowBlock> snowloggableBlock = new HashMap<>();
+    private static final HashMap<Block, ISnowVariant> snowloggableBlock = new HashMap<>();
     private static final ArrayList<Class <?>> mustHaveBase = new ArrayList<>();
 
     public static boolean canContain(BlockState state) {
@@ -48,14 +48,6 @@ public class SnowHelper {
         return mustHaveBase.stream().noneMatch( clazz -> clazz.isInstance(contentBlock));
     }
 
-    public static boolean contentIsOf(Block block, BlockView blockView, BlockPos blockPos) {
-        return getContentState(blockView, blockPos).isOf(block);
-    }
-    public static boolean contentIsOf(BlockState blockState, BlockView blockView, BlockPos blockPos) {
-        return getContentState(blockView, blockPos).isOf(blockState.getBlock());
-    }
-
-
     public static void setOrStackSnow(WorldAccess worldAccess, BlockPos pos) {
         BlockState possibleContent = worldAccess.getBlockState(pos);
         if (possibleContent instanceof ISnowVariant) {
@@ -72,6 +64,7 @@ public class SnowHelper {
             setSnow(possibleContent, worldChunk, pos);
         }
     }
+
     public static void setSnow(BlockState content, WorldAccess world, BlockPos pos) {
         world.setBlockState(pos, ModBlocks.SNOW_BLOCK.getDefaultState(), Block.NOTIFY_LISTENERS, 512);
         setContentState(content, world, pos);
@@ -81,10 +74,6 @@ public class SnowHelper {
         worldChunk.setBlockState(pos, ModBlocks.SNOW_BLOCK.getDefaultState(), false);
         setContentState(content, worldChunk, pos);
     }
-    public static void setSnow(WorldAccess world, BlockPos pos) {
-        setSnow(world.getBlockState(pos), world, pos);
-    }
-
     public static void stackSnow(BlockState state, WorldAccess worldAccess, BlockPos pos) {
         int currentLayers = state.get(ISnowVariant.LAYERS);
         if (currentLayers != 8) {
@@ -98,22 +87,17 @@ public class SnowHelper {
         }
     }
 
-    public static void removeOrReduce(WorldAccess worldAccess, BlockPos pos) {
-        BlockState snowState = worldAccess.getBlockState(pos);
-        removeOrReduce(snowState, worldAccess, pos);
-    }
-
     public static void removeOrReduce(BlockState snowState, WorldAccess worldAccess, BlockPos pos) {
         BlockState content = getContentState(worldAccess, pos);
         int layers = snowState.get(ISnowVariant.LAYERS);
         if (layers == 1) {
-            if (content.isAir()) {
-                worldAccess.removeBlock(pos, false);
-            } else {
-                worldAccess.setBlockState(pos, content, Block.NOTIFY_LISTENERS);
+            worldAccess.breakBlock(pos, false);
+            if (!content.isAir()) {
+                worldAccess.setBlockState(pos, content, Block.NOTIFY_ALL);
             }
         } else {
-            worldAccess.setBlockState(pos, snowState.with(ISnowVariant.LAYERS, layers - 1), Block.NOTIFY_LISTENERS);
+            worldAccess.setBlockState(pos, snowState.with(ISnowVariant.LAYERS, layers - 1), Block.NOTIFY_ALL);
+            worldAccess.syncWorldEvent(WorldEvents.BLOCK_BROKEN, pos, Block.getRawIdFromState(Blocks.SNOW.getDefaultState()));
         }
     }
 
@@ -123,17 +107,17 @@ public class SnowHelper {
         }
     }
 
-
     static {
-        snowloggableBlock.put(Blocks.POPPY, ModBlocks.SNOW_BLOCK);
-        snowloggableBlock.put(Blocks.BAMBOO, ModBlocks.SNOW_BLOCK);
-        snowloggableBlock.put(Blocks.SUGAR_CANE, ModBlocks.SNOW_BLOCK);
-        snowloggableBlock.put(Blocks.SUNFLOWER, ModBlocks.SNOW_BLOCK);
-        snowloggableBlock.put(Blocks.SWEET_BERRY_BUSH, ModBlocks.SNOW_BLOCK);
-
-        mustHaveBase.add(TallPlantBlock.class);
-        mustHaveBase.add(BambooBlock.class);
         mustHaveBase.add(SugarCaneBlock.class);
+        mustHaveBase.add(BambooBlock.class);
+    }
+
+    public static void addBlock(Block block) {
+        snowloggableBlock.put(block, ModBlocks.SNOW_BLOCK);
+    }
+
+    public static void addBlock(Block block, ISnowVariant snowVariant) {
+        snowloggableBlock.put(block, snowVariant);
     }
 
     public static boolean contentShouldBreak(int layers, BlockState content) {

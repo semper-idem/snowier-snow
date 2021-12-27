@@ -3,11 +3,8 @@ package ss.snowiersnow.mixin;
 import net.minecraft.block.*;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.util.registry.RegistryKey;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.*;
 import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.dimension.DimensionType;
@@ -15,9 +12,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import ss.snowiersnow.block.ISnowVariant;
 import ss.snowiersnow.utils.BiomeHelper;
-import ss.snowiersnow.block.ModBlocks;
 import ss.snowiersnow.utils.SnowHelper;
 
 import java.util.function.Supplier;
@@ -41,18 +36,22 @@ public abstract class ServerWorldMixin extends World {
         BlockPos pos = getRandomTopPos(chunk);
         BlockState state = this.getBlockState(pos);
         if (BiomeHelper.canSetSnow(this, pos, state)){
-            if (state.isAir() || SnowHelper.canContain(state) || shouldAccumulate(state)) {
+            int layers = 0;
+            if (state.getBlock() instanceof SnowBlock) {
+                layers = state.get(SnowBlock.LAYERS);
+                BlockState blockBelow = chunk.getBlockState(pos.down());
+                if (blockBelow.getBlock() instanceof SnowBlock) {
+                    layers = layers + 8;
+                }
+            }
+            if (state.isAir() || SnowHelper.canContain(state) || shouldAccumulate(layers)) {
                 SnowHelper.setOrStackSnow(chunk, pos);
             }
         }
     }
 
-    private boolean shouldAccumulate(BlockState state){
-        if (state.getBlock() instanceof ISnowVariant) {
-            int layers = state.get(SnowBlock.LAYERS);
-            return Math.random() < ( 1f / (1 + (layers * 4)));
-        }
-        return false;
+    private boolean shouldAccumulate(int layers){
+        return Math.random() < ( 1f / (1 + (layers * 4)));
     }
 
     private BlockPos getRandomTopPos(WorldChunk chunk){
@@ -62,7 +61,7 @@ public abstract class ServerWorldMixin extends World {
 
         //Possible performance hit(untested)
         //TODO test performance, maybe implement new heightmap type, future config option candidate !HashMap BlockState/chance to pass hardcoded or at start
-        if (!chunk.getBlockState(randomTopBlock).isFullCube(chunk, randomTopBlock)) {
+        if (!chunk.getBlockState(randomTopBlock.down()).isFullCube(chunk, randomTopBlock.down())) {
             for (int y = randomTopBlock.getY(); y > chunk.getBottomY(); y--){
                 randomTopBlock = randomTopBlock.down();
                 BlockState topBlockState = chunk.getBlockState(randomTopBlock);

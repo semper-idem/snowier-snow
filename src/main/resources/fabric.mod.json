@@ -3,9 +3,9 @@
   "id": "ss",
   "version": "0.1.0",
   "name": "Snowier Snow",
-  "description": "",
+  "description": "Attempts to add deapths to snow",
   "authors": [
-    ""
+    "akio"
   ],
   "contact": {},
   "license": "MIT",

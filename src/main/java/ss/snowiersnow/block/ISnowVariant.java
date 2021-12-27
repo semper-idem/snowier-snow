@@ -4,6 +4,7 @@ import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
@@ -106,7 +107,7 @@ public interface ISnowVariant extends BlockEntityProvider {
     }
 
     default void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
-        if (!state.isOf(newState.getBlock())) {
+        if (newState.isAir()) {
             BlockState content = SnowHelper.getContentState(world, pos);
             if (!content.isAir()) {
                 if (SnowHelper.isContentBase(content)) {
@@ -124,6 +125,9 @@ public interface ISnowVariant extends BlockEntityProvider {
                     }
                 }
             }
+        } else if (newState.getBlock() instanceof SweetBerryBushBlock) {
+            world.setBlockState(pos, state);
+            SnowHelper.setContentState(newState, world, pos);
         }
     }
 
@@ -167,17 +171,22 @@ public interface ISnowVariant extends BlockEntityProvider {
         if (world.getLightLevel(LightType.BLOCK, pos) > 11) {
             SnowHelper.removeOrReduce(state, world, pos);
         }
-        updateContent(state, world, pos, random);
+        BlockState content = SnowHelper.getContentState(world, pos);
+        updateContent(content, world, pos, random);
+
+        if (content.hasRandomTicks()) {
+            content.randomTick(world, pos, random);
+        }
     }
 
-    default void updateContent(BlockState state, WorldAccess world, BlockPos pos, Random random){
-        BlockState content = SnowHelper.getContentState(world, pos);
+    default void updateContent(BlockState content, WorldAccess world, BlockPos pos, Random random){
         if (!content.canPlaceAt(world, pos)) {
                 SnowHelper.setContentState(Blocks.AIR.getDefaultState(), world, pos);
                 if (world instanceof ServerWorld) {
                     ItemScatterer.spawn((World) world, pos.getX(), pos.getY(), pos.getZ(), new ItemStack(content.getBlock()));
                 }
         }
+
     }
 
     default float calcBlockBreakingDelta(BlockState state, PlayerEntity player, BlockView world, BlockPos pos) {
@@ -251,15 +260,16 @@ public interface ISnowVariant extends BlockEntityProvider {
     }
 
     default void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity) {
-        if (SnowHelper.getContentState(world, pos).isOf(Blocks.SWEET_BERRY_BUSH)){
-            onBerryBushEntityCollision(state, world, pos, entity);
+        BlockState content = SnowHelper.getContentState(world, pos);
+        if (content.isOf(Blocks.SWEET_BERRY_BUSH)){
+            onBerryBushEntityCollision(content, world, pos, entity);
         }
     }
 
     default void onBerryBushEntityCollision(BlockState state, World world, BlockPos pos, Entity entity) {
         if (entity instanceof LivingEntity && entity.getType() != EntityType.FOX && entity.getType() != EntityType.BEE) {
             entity.slowMovement(state, new Vec3d(0.800000011920929D, 0.75D, 0.800000011920929D));
-            if (!world.isClient && (Integer)state.get(SweetBerryBushBlock.AGE) > 0 && (entity.lastRenderX != entity.getX() || entity.lastRenderZ != entity.getZ())) {
+            if (!world.isClient && state.get(SweetBerryBushBlock.AGE) > 0 && (entity.lastRenderX != entity.getX() || entity.lastRenderZ != entity.getZ())) {
                 double d = Math.abs(entity.getX() - entity.lastRenderX);
                 double e = Math.abs(entity.getZ() - entity.lastRenderZ);
                 if (d >= 0.003000000026077032D || e >= 0.003000000026077032D) {
@@ -280,5 +290,4 @@ public interface ISnowVariant extends BlockEntityProvider {
     default <T extends BlockEntity> GameEventListener getGameEventListener(World world, T blockEntity) {
         return BlockEntityProvider.super.getGameEventListener(world, blockEntity);
     }
-
 }
