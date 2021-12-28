@@ -76,7 +76,7 @@ TODO-FIRST-ITERATION
 
 
 LAST THING I DID:
-- fixed "topblock"
+- fixing top block
 NEXT THING TO DO:
-- implement faster solution to "topblock" problem
-- implement sapling, test berrybush
+- last spotted bug -> drop after onShovel removing layers(duplicating sunflower)
+- todo test in survival "onCreativeBreak?"

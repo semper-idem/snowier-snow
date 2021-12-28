@@ -1,6 +1,7 @@
 package ss.snowiersnow.utils;
 
 import net.minecraft.block.*;
+import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
@@ -52,7 +53,7 @@ public class SnowHelper {
         BlockState possibleContent = worldAccess.getBlockState(pos);
         if (possibleContent instanceof ISnowVariant) {
             stackSnow(possibleContent, worldAccess, pos);
-        } else if (canContain(possibleContent)) {
+        } else if (canContain(possibleContent) || possibleContent.isAir()) {
             setSnow(possibleContent, worldAccess, pos);
         }
     }
@@ -67,6 +68,9 @@ public class SnowHelper {
 
     public static void setSnow(BlockState content, WorldAccess world, BlockPos pos) {
         world.setBlockState(pos, ModBlocks.SNOW_BLOCK.getDefaultState(), Block.NOTIFY_LISTENERS, 512);
+        if (content.getBlock() instanceof TallPlantBlock) {
+            world.setBlockState(pos.up(), content.getBlock().getDefaultState().with(TallPlantBlock.HALF, DoubleBlockHalf.UPPER), Block.NOTIFY_LISTENERS, 512);
+        }
         setContentState(content, world, pos);
     }
 
@@ -94,6 +98,9 @@ public class SnowHelper {
             worldAccess.breakBlock(pos, false);
             if (!content.isAir()) {
                 worldAccess.setBlockState(pos, content, Block.NOTIFY_ALL);
+                if (content.getBlock() instanceof TallPlantBlock) {
+                    worldAccess.setBlockState(pos.up(), content.with(TallPlantBlock.HALF, DoubleBlockHalf.UPPER), Block.NOTIFY_LISTENERS);
+                }
             }
         } else {
             worldAccess.setBlockState(pos, snowState.with(ISnowVariant.LAYERS, layers - 1), Block.NOTIFY_ALL);
@@ -110,6 +117,7 @@ public class SnowHelper {
     static {
         mustHaveBase.add(SugarCaneBlock.class);
         mustHaveBase.add(BambooBlock.class);
+        mustHaveBase.add(TallPlantBlock.class);
     }
 
     public static void addBlock(Block block) {

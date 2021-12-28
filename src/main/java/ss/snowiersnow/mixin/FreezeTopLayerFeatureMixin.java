@@ -1,9 +1,6 @@
 package ss.snowiersnow.mixin;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.SnowyBlock;
+import net.minecraft.block.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.Heightmap;
@@ -15,7 +12,6 @@ import net.minecraft.world.gen.feature.util.FeatureContext;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import ss.snowiersnow.utils.BiomeHelper;
-import ss.snowiersnow.block.ModBlocks;
 import ss.snowiersnow.utils.SnowHelper;
 
 @Mixin(FreezeTopLayerFeature.class)
@@ -28,30 +24,45 @@ public class FreezeTopLayerFeatureMixin {
     public boolean generate(FeatureContext<DefaultFeatureConfig> context) {
         StructureWorldAccess structureWorldAccess = context.getWorld();
         BlockPos blockPos = context.getOrigin();
-        BlockPos.Mutable mutable = new BlockPos.Mutable();
-        BlockPos.Mutable mutable2 = new BlockPos.Mutable();
+        BlockPos.Mutable surfacePosLeaves = new BlockPos.Mutable();
+        BlockPos.Mutable floorPosLeaves = new BlockPos.Mutable();
+        BlockPos.Mutable surfacePosNoLeaves = new BlockPos.Mutable();
+        BlockPos.Mutable floorPosNoLeaves = new BlockPos.Mutable();
 
         for(int i = 0; i < 16; ++i) {
             for(int j = 0; j < 16; ++j) {
                 int k = blockPos.getX() + i;
                 int l = blockPos.getZ() + j;
                 int m = structureWorldAccess.getTopY(Heightmap.Type.MOTION_BLOCKING, k, l);
-                mutable.set(k, m, l);
-                mutable2.set(mutable).move(Direction.DOWN, 1);
-                Biome biome = structureWorldAccess.getBiome(mutable);
-                if (biome.canSetIce(structureWorldAccess, mutable2, false)) {
-                    structureWorldAccess.setBlockState(mutable2, Blocks.ICE.getDefaultState(), Block.NOTIFY_LISTENERS);
+                int m2 = structureWorldAccess.getTopY(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, k, l);
+                surfacePosLeaves.set(k, m, l);
+                floorPosLeaves.set(surfacePosLeaves).move(Direction.DOWN, 1);
+                surfacePosNoLeaves.set(k, m2, l);
+                floorPosNoLeaves.set(surfacePosNoLeaves).move(Direction.DOWN, 1);
+                Biome biome = structureWorldAccess.getBiome(surfacePosLeaves);
+
+                setSnow(biome, structureWorldAccess, surfacePosLeaves, floorPosLeaves);
+                if (surfacePosLeaves.getY() != surfacePosNoLeaves.getY()) {
+                    setSnow(biome, structureWorldAccess, surfacePosNoLeaves, floorPosNoLeaves);
                 }
 
-                BlockState blockState = structureWorldAccess.getBlockState(mutable2);
-                if (BiomeHelper.canSetSnow(structureWorldAccess, mutable, blockState)) {
-                    SnowHelper.setOrStackSnow(structureWorldAccess, mutable2);
-                    if (blockState.contains(SnowyBlock.SNOWY)) {
-                        structureWorldAccess.setBlockState(mutable2, blockState.with(SnowyBlock.SNOWY, true), Block.NOTIFY_LISTENERS);
-                    }
-                }
             }
         }
         return true;
+    }
+
+    private void setSnow(Biome biome, StructureWorldAccess worldAccess, BlockPos surfacePos, BlockPos floorPos){
+        if (biome.canSetIce(worldAccess, floorPos, false)) {
+            worldAccess.setBlockState(floorPos, Blocks.ICE.getDefaultState(), Block.NOTIFY_LISTENERS);
+        }
+
+        BlockState possibleContent2 = worldAccess.getBlockState(surfacePos);
+        if (BiomeHelper.canSetSnow(worldAccess, surfacePos, possibleContent2)) {
+            SnowHelper.setOrStackSnow(worldAccess, surfacePos);
+            BlockState blockState = worldAccess.getBlockState(floorPos);
+            if (blockState.contains(SnowyBlock.SNOWY)) {
+                worldAccess.setBlockState(floorPos, blockState.with(SnowyBlock.SNOWY, true), Block.NOTIFY_LISTENERS);
+            }
+        }
     }
 }

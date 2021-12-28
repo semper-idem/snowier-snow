@@ -216,7 +216,7 @@ public interface ISnowVariant extends BlockEntityProvider {
             if (SnowHelper.canContain(possibleContent)){
                 BlockState possibleContentState = possibleContent.getDefaultState();
                 if (possibleContentState.canPlaceAt(world, pos)) {
-                    SnowHelper.setContentState(possibleContentState, world, pos);
+                    SnowHelper.setSnow(possibleContentState, world, pos);
                     if (!player.isCreative()) {
                         stackInHand.decrement(1);
                     }

@@ -1,6 +1,5 @@
 package ss.snowiersnow.mixin;
 
-
 import net.minecraft.block.*;
 import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.entity.player.PlayerEntity;
@@ -19,57 +18,57 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import ss.snowiersnow.block.ISnowVariant;
-import ss.snowiersnow.SnowierSnow;
 import ss.snowiersnow.block.ModBlocks;
 import ss.snowiersnow.utils.SnowHelper;
 
 @Mixin(TallPlantBlock.class)
 public class TallPlantBlockMixin extends PlantBlock {
 
-    @Final
-    @Shadow
-    public static EnumProperty<DoubleBlockHalf> HALF;
+    @Shadow @Final public static EnumProperty<DoubleBlockHalf> HALF;
 
     protected TallPlantBlockMixin(Settings settings) {
         super(settings);
     }
-//
-//    @Inject(method = "getStateForNeighborUpdate", at = @At("HEAD"), cancellable = true)
-//    public void getStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos, CallbackInfoReturnable<BlockState> cir) {
-//        DoubleBlockHalf half = state.get(HALF);
-//        if (half == DoubleBlockHalf.UPPER) {
-//            if (world.getBlockState(pos.down()).getBlock() instanceof ISnowVariant) {
-//                cir.setReturnValue(state);
-//            }
-//        }
-//        if (direction.getAxis() == Direction.Axis.Y){
-//            if (neighborState.getBlock() instanceof ISnowVariant) {
-//                if ((half == DoubleBlockHalf.LOWER && direction == Direction.UP) || (half == DoubleBlockHalf.UPPER && direction == Direction.DOWN)) {
-//                    cir.setReturnValue(state);
-//                }
-//            }
-//        }
-//    }
-//
-//    @Inject(method = "onBreakInCreative", at = @At("TAIL"))
-//    private static void onBreakInCreative(World world, BlockPos pos, BlockState state, PlayerEntity player, CallbackInfo ci) {
-//        if (state.get(HALF) == DoubleBlockHalf.UPPER) {
-//            BlockPos blockPos = pos.down();
-//            BlockState blockState = world.getBlockState(blockPos);
-//            if (blockState.getBlock() instanceof ISnowVariant) {
-//                world.setBlockState(blockPos, Blocks.AIR.getDefaultState(), Block.NOTIFY_ALL | Block.SKIP_DROPS);
-//                world.setBlockState(blockPos, ModBlocks.SNOW_BLOCK.getDefaultState(), Block.NOTIFY_ALL | Block.SKIP_DROPS);
-//                world.syncWorldEvent(player, WorldEvents.BLOCK_BROKEN, blockPos, Block.getRawIdFromState(blockState));
-//            }
-//        }
-//    }
-//
-//    @Inject(method = "canPlaceAt", at = @At("TAIL"), cancellable = true)
-//    public void canPlaceAt(BlockState state, WorldView world, BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
-//        boolean unmixedResult = state.isOf(this) && state.get(HALF) == DoubleBlockHalf.LOWER;
-//        boolean mixinResult = world.getBlockState(pos.down()).getBlock() instanceof ISnowVariant; //can plant on snow bug TODO
-//        cir.setReturnValue(unmixedResult || mixinResult);
-//        cir.cancel();
-//    }
-}
 
+
+    @Inject(method = "getStateForNeighborUpdate", at = @At("TAIL"), cancellable = true)
+    public void getStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos, CallbackInfoReturnable<BlockState> cir) {
+        BlockState contentDown = SnowHelper.getContentState(world, pos.down());
+        if (state.get(HALF) == DoubleBlockHalf.UPPER) {
+            if ((contentDown.getBlock() instanceof TallPlantBlock)) {
+                if (contentDown.get(HALF) == DoubleBlockHalf.LOWER) {
+                    cir.setReturnValue(state);
+                }
+            }
+        }
+    }
+
+    @Inject(method = "onBreakInCreative", at = @At("TAIL"))
+    private static void onBreakInCreative(World world, BlockPos pos, BlockState state, PlayerEntity player, CallbackInfo ci) {
+        if (state.get(TallPlantBlock.HALF) == DoubleBlockHalf.UPPER) {
+            BlockPos blockPos = pos.down();
+            BlockState blockState = world.getBlockState(blockPos);
+            if (blockState.getBlock() instanceof ISnowVariant) {
+                world.setBlockState(blockPos, Blocks.AIR.getDefaultState(), Block.NOTIFY_ALL | Block.SKIP_DROPS);
+                world.setBlockState(blockPos, ModBlocks.SNOW_BLOCK.getDefaultState(), Block.NOTIFY_ALL | Block.SKIP_DROPS);
+                world.syncWorldEvent(player, WorldEvents.BLOCK_BROKEN, blockPos, Block.getRawIdFromState(blockState));
+            }
+        }
+    }
+
+    @Inject(method = "canPlaceAt", at = @At("TAIL"), cancellable = true)
+    public void canPlaceAt(BlockState state, WorldView world, BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
+        if (state.get(TallPlantBlock.HALF) == DoubleBlockHalf.LOWER) {
+            cir.setReturnValue(super.canPlaceAt(state, world, pos));
+        } else {
+            System.out.println("TOP PART");
+            BlockState blockState = world.getBlockState(pos.down());
+            if (blockState.getBlock() instanceof ISnowVariant) {
+                BlockState content = SnowHelper.getContentState(world, pos);
+                if (content.getBlock() instanceof TallPlantBlock) {
+                    cir.setReturnValue(content.get(TallPlantBlock.HALF) == DoubleBlockHalf.LOWER);
+                }
+            }
+        }
+    }
+}

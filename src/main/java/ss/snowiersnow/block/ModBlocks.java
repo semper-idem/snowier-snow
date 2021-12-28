@@ -28,6 +28,11 @@ public class ModBlocks {
         SnowHelper.addBlock(Blocks.BAMBOO);
         SnowHelper.addBlock(Blocks.SUGAR_CANE);
         SnowHelper.addBlock(Blocks.SWEET_BERRY_BUSH);
+        SnowHelper.addBlock(Blocks.GRASS);
+        SnowHelper.addBlock(Blocks.FERN);
+        SnowHelper.addBlock(Blocks.TALL_GRASS);
+        SnowHelper.addBlock(Blocks.LARGE_FERN);
+        SnowHelper.addBlock(Blocks.SWEET_BERRY_BUSH);
         Registry.BLOCK.forEach( block -> {
             if (block instanceof FlowerBlock) {
                 SnowHelper.addBlock(block);
@@ -40,6 +45,11 @@ public class ModBlocks {
         });
         Registry.BLOCK.forEach( block -> {
             if (block instanceof FenceBlock) {
+                SnowHelper.addBlock(block);
+            }
+        });
+        Registry.BLOCK.forEach( block -> {
+            if (block instanceof TallFlowerBlock) {
                 SnowHelper.addBlock(block);
             }
         });
