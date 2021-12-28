@@ -132,7 +132,7 @@ public interface ISnowVariant extends BlockEntityProvider {
     }
 
     default BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos) {
-        updateContent(state, world, pos, world.getRandom());
+        updateContent(SnowHelper.getContentState(world, pos), world, pos);
         return !state.canPlaceAt(world, pos) ? Blocks.AIR.getDefaultState() : state;
     }
 
@@ -172,14 +172,14 @@ public interface ISnowVariant extends BlockEntityProvider {
             SnowHelper.removeOrReduce(state, world, pos);
         }
         BlockState content = SnowHelper.getContentState(world, pos);
-        updateContent(content, world, pos, random);
+        updateContent(content, world, pos);
 
         if (content.hasRandomTicks()) {
             content.randomTick(world, pos, random);
         }
     }
 
-    default void updateContent(BlockState content, WorldAccess world, BlockPos pos, Random random){
+    default void updateContent(BlockState content, WorldAccess world, BlockPos pos){
         if (!content.canPlaceAt(world, pos)) {
                 SnowHelper.setContentState(Blocks.AIR.getDefaultState(), world, pos);
                 if (world instanceof ServerWorld) {
@@ -216,7 +216,7 @@ public interface ISnowVariant extends BlockEntityProvider {
             if (SnowHelper.canContain(possibleContent)){
                 BlockState possibleContentState = possibleContent.getDefaultState();
                 if (possibleContentState.canPlaceAt(world, pos)) {
-                    SnowHelper.setSnow(possibleContentState, world, pos);
+                    SnowHelper.putInSnow(possibleContentState, world, pos, state.get(LAYERS));
                     if (!player.isCreative()) {
                         stackInHand.decrement(1);
                     }
@@ -225,7 +225,7 @@ public interface ISnowVariant extends BlockEntityProvider {
             }
         }
         if (stackInHand.isOf(ModBlocks.SNOW_BLOCK.asItem()) && state.get(LAYERS) != 8) {
-            SnowHelper.stackSnow(state, world, pos);
+            SnowHelper.stackSnow(world, pos, state.get(LAYERS));
             if (!player.isCreative()) {
                 stackInHand.decrement(1);
             }

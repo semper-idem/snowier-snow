@@ -45,7 +45,7 @@ public abstract class ServerWorldMixin extends World {
                 }
             }
             if (state.isAir() || SnowHelper.canContain(state) || shouldAccumulate(layers)) {
-                SnowHelper.setOrStackSnow(chunk, pos);
+                SnowHelper.setOrStackSnow((ServerWorld)(World)this, pos);
             }
         }
     }

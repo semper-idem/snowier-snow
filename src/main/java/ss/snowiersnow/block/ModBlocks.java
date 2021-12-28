@@ -19,7 +19,7 @@ public class ModBlocks {
     public static DefaultSnowBlock SNOW_BLOCK;
     public static BlockEntityType<SnowContentBlockEntity> SNOW_BLOCK_ENTITY;
     static {
-        SNOW_BLOCK = new DefaultSnowBlock(FabricBlockSettings.of(Material.SNOW_LAYER).ticksRandomly().strength(0.1F).requiresTool().sounds(BlockSoundGroup.SNOW).blockVision((state, world, pos) -> state.get(SnowBlock.LAYERS) >= 8));
+        SNOW_BLOCK = new DefaultSnowBlock(FabricBlockSettings.copy(Blocks.SNOW));
         SNOW_BLOCK_ENTITY = FabricBlockEntityTypeBuilder.create(SnowContentBlockEntity::new, SNOW_BLOCK).build(null);
     }
 

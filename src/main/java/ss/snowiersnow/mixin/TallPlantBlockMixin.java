@@ -31,9 +31,10 @@ public class TallPlantBlockMixin extends PlantBlock {
     }
 
 
-    @Inject(method = "getStateForNeighborUpdate", at = @At("TAIL"), cancellable = true)
+    @Inject(method = "getStateForNeighborUpdate", at = @At("HEAD"), cancellable = true)
     public void getStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos, CallbackInfoReturnable<BlockState> cir) {
         BlockState contentDown = SnowHelper.getContentState(world, pos.down());
+        System.out.println("here");
         if (state.get(HALF) == DoubleBlockHalf.UPPER) {
             if ((contentDown.getBlock() instanceof TallPlantBlock)) {
                 if (contentDown.get(HALF) == DoubleBlockHalf.LOWER) {
@@ -61,7 +62,6 @@ public class TallPlantBlockMixin extends PlantBlock {
         if (state.get(TallPlantBlock.HALF) == DoubleBlockHalf.LOWER) {
             cir.setReturnValue(super.canPlaceAt(state, world, pos));
         } else {
-            System.out.println("TOP PART");
             BlockState blockState = world.getBlockState(pos.down());
             if (blockState.getBlock() instanceof ISnowVariant) {
                 BlockState content = SnowHelper.getContentState(world, pos);

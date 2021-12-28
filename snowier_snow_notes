@@ -80,3 +80,8 @@ LAST THING I DID:
 NEXT THING TO DO:
 - last spotted bug -> drop after onShovel removing layers(duplicating sunflower)
 - todo test in survival "onCreativeBreak?"
+
+
+
+BUGS:
+When placing on side, item in hand replaces snow when it could put itself in
