@@ -12,6 +12,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.mob.PiglinBrain;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
@@ -21,6 +22,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.state.property.IntProperty;
 import net.minecraft.state.property.Properties;
+import net.minecraft.tag.BlockTags;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.ItemScatterer;
@@ -110,25 +112,27 @@ public interface ISnowVariant extends BlockEntityProvider {
         if (newState.isAir()) {
             BlockState content = SnowHelper.getContentState(world, pos);
             if (!content.isAir()) {
-                if (SnowHelper.isContentBase(content)) {
-                    world.setBlockState(pos.up(), Blocks.AIR.getDefaultState());
-                }
+
                 if (state.getBlock() instanceof ISnowVariant) {
                     boolean contentShouldBreak = SnowHelper.contentShouldBreak(state.get(LAYERS), content);
-                    BlockState toBeReplaced = contentShouldBreak ? state : content;
-                    if (toBeReplaced.canPlaceAt(world, pos)) {
-                        world.removeBlockEntity(pos);
-                        world.setBlockState(pos, toBeReplaced);
-                    }
                     if (contentShouldBreak) {
+                        if (SnowHelper.isContentBase(content)) {
+                            world.setBlockState(pos.up(), Blocks.AIR.getDefaultState());
+                        }
+                        SnowHelper.setContentState(Blocks.AIR.getDefaultState(), world, pos);
                         ItemScatterer.spawn(world, pos.getX(), pos.getY(), pos.getZ(), new ItemStack(content.getBlock()));
+                        world.setBlockState(pos, state);
+                    } else {
+                        world.setBlockState(pos, content);
+                        content.getBlock().onPlaced(world, pos, content, null ,null);
                     }
                 }
             }
-        } else if (newState.getBlock() instanceof SweetBerryBushBlock) {
-            world.setBlockState(pos, state);
-            SnowHelper.setContentState(newState, world, pos);
         }
+//        else if (newState.getBlock() instanceof SweetBerryBushBlock) {
+//            world.setBlockState(pos, state);
+//            SnowHelper.setContentState(newState, world, pos);
+//        }
     }
 
     default BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos) {

@@ -41,7 +41,7 @@ public class SnowHelper {
         getBlockEntity(world, pos).setContent(content);
     }
 
-    public static void setContentState(BlockState content, WorldChunk world, BlockPos pos) {
+    public static void setContentState(BlockState content, ServerWorld world, BlockPos pos) {
         getBlockEntity(world, pos).setContent(content);
     }
 
@@ -120,6 +120,7 @@ public class SnowHelper {
         int layers = snowState.get(ISnowVariant.LAYERS);
         if (layers == 1) {
             if (!content.isAir()) {
+                worldAccess.getChunk(pos).removeBlockEntity(pos);
                 worldAccess.setBlockState(pos, content, Block.NOTIFY_ALL);
                 if (content.getBlock() instanceof TallPlantBlock) {
                     worldAccess.setBlockState(pos.up(), content.with(TallPlantBlock.HALF, DoubleBlockHalf.UPPER), Block.NOTIFY_LISTENERS);
@@ -154,6 +155,9 @@ public class SnowHelper {
     }
 
     public static boolean contentShouldBreak(int layers, BlockState content) {
+        if (content.isAir()) {
+            return false;
+        }
         float contentHardness = content.getBlock().getHardness();
         return layers == 8 ? contentHardness < 0.2F : contentHardness < 0.1F;
     }

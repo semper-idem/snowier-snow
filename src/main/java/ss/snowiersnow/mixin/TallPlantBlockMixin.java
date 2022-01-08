@@ -1,8 +1,10 @@
 package ss.snowiersnow.mixin;
 
 import net.minecraft.block.*;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -34,7 +36,6 @@ public class TallPlantBlockMixin extends PlantBlock {
     @Inject(method = "getStateForNeighborUpdate", at = @At("HEAD"), cancellable = true)
     public void getStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos, CallbackInfoReturnable<BlockState> cir) {
         BlockState contentDown = SnowHelper.getContentState(world, pos.down());
-        System.out.println("here");
         if (state.get(HALF) == DoubleBlockHalf.UPPER) {
             if ((contentDown.getBlock() instanceof TallPlantBlock)) {
                 if (contentDown.get(HALF) == DoubleBlockHalf.LOWER) {
@@ -44,17 +45,20 @@ public class TallPlantBlockMixin extends PlantBlock {
         }
     }
 
-    @Inject(method = "onBreakInCreative", at = @At("TAIL"))
-    private static void onBreakInCreative(World world, BlockPos pos, BlockState state, PlayerEntity player, CallbackInfo ci) {
+    @Inject(method = "onBreak", at = @At("HEAD"))
+    private void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player, CallbackInfo ci) {
         if (state.get(TallPlantBlock.HALF) == DoubleBlockHalf.UPPER) {
             BlockPos blockPos = pos.down();
             BlockState blockState = world.getBlockState(blockPos);
             if (blockState.getBlock() instanceof ISnowVariant) {
-                world.setBlockState(blockPos, Blocks.AIR.getDefaultState(), Block.NOTIFY_ALL | Block.SKIP_DROPS);
-                world.setBlockState(blockPos, ModBlocks.SNOW_BLOCK.getDefaultState(), Block.NOTIFY_ALL | Block.SKIP_DROPS);
-                world.syncWorldEvent(player, WorldEvents.BLOCK_BROKEN, blockPos, Block.getRawIdFromState(blockState));
+                if (!player.isCreative()) {
+                    dropStack(world, pos, new ItemStack(this.getDefaultState().getBlock()));
+                }
+                SnowHelper.setContentState(Blocks.AIR.getDefaultState(), world, blockPos);
+                world.syncWorldEvent(player, WorldEvents.BLOCK_BROKEN, blockPos, Block.getRawIdFromState(state));
             }
         }
+        super.onBreak(world, pos, state, player);
     }
 
     @Inject(method = "canPlaceAt", at = @At("TAIL"), cancellable = true)
