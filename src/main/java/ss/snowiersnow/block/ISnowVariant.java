@@ -112,7 +112,6 @@ public interface ISnowVariant extends BlockEntityProvider {
         if (newState.isAir()) {
             BlockState content = SnowHelper.getContentState(world, pos);
             if (!content.isAir()) {
-
                 if (state.getBlock() instanceof ISnowVariant) {
                     boolean contentShouldBreak = SnowHelper.contentShouldBreak(state.get(LAYERS), content);
                     if (contentShouldBreak) {
@@ -128,11 +127,10 @@ public interface ISnowVariant extends BlockEntityProvider {
                     }
                 }
             }
+        } else if (SnowHelper.canContain(newState)) {
+            world.setBlockState(pos, state);
+            SnowHelper.setContentState(newState, world, pos);
         }
-//        else if (newState.getBlock() instanceof SweetBerryBushBlock) {
-//            world.setBlockState(pos, state);
-//            SnowHelper.setContentState(newState, world, pos);
-//        }
     }
 
     default BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos) {
