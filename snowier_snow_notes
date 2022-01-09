@@ -73,13 +73,31 @@ TODO-FIRST-ITERATION
 -Sugar Cane
 -Saplings
 
+TODO-SECOND-ITERATION
+-Fence
+-Wall
+-Pane
 
 
-LAST:
+DONE:
 - snowfall stacking fixed
 - translation
 
-TODO:
+LAST:
 - replace vanilla snow
 - check snow gen under trees
+
+TODO:
+- when placing vanilla snow place modded snow instead
+- snow content drop / snow drop
+- add snowfallable tag
+- speed up freezetoplayer feature(unsure)
+- config
+    - max snow layers
+    - snow stacking
+    - snowloggable blocks
+    - snow falling speed
+    - snowfall passable blocks(fences etc)
+- pre-calc whenever possible
+- never ending refactoring
 - prob more...

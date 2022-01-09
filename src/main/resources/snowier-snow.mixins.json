@@ -10,6 +10,8 @@
     "FreezeTopLayerFeatureMixin",
     "ServerWorldMixin",
     "SnowBlockMixin",
+    "SnowyBlockMixin",
+    "SpreadableBlockMixin",
     "SugarCaneBlockMixin",
     "TallPlantBlockMixin"
   ],
