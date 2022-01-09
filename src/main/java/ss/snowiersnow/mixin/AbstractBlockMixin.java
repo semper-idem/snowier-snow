@@ -21,9 +21,9 @@ public class AbstractBlockMixin {
 
     @Inject(method = "onUse", at = @At("TAIL"), cancellable = true)
     public void hookOnUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit, CallbackInfoReturnable<ActionResult> cir) {
-        if (Block.getBlockFromItem(player.getStackInHand(hand).getItem()) == ModBlocks.SNOW_BLOCK) {
+        if (Block.getBlockFromItem(player.getStackInHand(hand).getItem()) == ModBlocks.SNOW) {
             if (SnowHelper.canContain(state)) {
-                if (ModBlocks.SNOW_BLOCK.canPlaceAt(state, world, pos)) {
+                if (ModBlocks.SNOW.canPlaceAt(state, world, pos)) {
                     SnowHelper.setSnow(state, world, pos);
                     if (!player.isCreative()) {
                         player.getStackInHand(hand).decrement(1);

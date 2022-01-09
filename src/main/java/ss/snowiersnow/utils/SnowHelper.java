@@ -51,7 +51,7 @@ public class SnowHelper {
 
     public static void setOrStackSnow(WorldAccess worldAccess, BlockPos pos) {
         BlockState possibleContent = worldAccess.getBlockState(pos);
-        if (possibleContent instanceof ISnowVariant) {
+        if (possibleContent.getBlock() instanceof ISnowVariant) {
             stackSnow(worldAccess, pos, possibleContent.get(ISnowVariant.LAYERS));
         } else if (canContain(possibleContent) || possibleContent.isAir()) {
             setSnow(possibleContent, worldAccess, pos);
@@ -59,7 +59,7 @@ public class SnowHelper {
     }
     public static void setOrStackSnow(ServerWorld serverWorld, BlockPos pos) {
         BlockState possibleContent = serverWorld.getBlockState(pos);
-        if (possibleContent instanceof ISnowVariant) {
+        if (possibleContent.getBlock() instanceof ISnowVariant) {
             stackSnow(serverWorld, pos, possibleContent.get(ISnowVariant.LAYERS));
         } else if (canContain(possibleContent) || possibleContent.isAir())  {
             setSnow(possibleContent, serverWorld, pos);
@@ -67,7 +67,7 @@ public class SnowHelper {
     }
 
     public static void setSnow(BlockState futureContent, WorldAccess world, BlockPos pos) {
-        world.setBlockState(pos, ModBlocks.SNOW_BLOCK.getDefaultState(), Block.NOTIFY_LISTENERS, 512);
+        world.setBlockState(pos, ModBlocks.SNOW.getDefaultState(), Block.NOTIFY_LISTENERS, 512);
         if (futureContent.getBlock() instanceof TallPlantBlock && futureContent.get(TallPlantBlock.HALF) == DoubleBlockHalf.LOWER) {
             world.setBlockState(pos.up(), futureContent.with(TallPlantBlock.HALF, DoubleBlockHalf.UPPER), Block.NOTIFY_LISTENERS, 512);
         }
@@ -75,7 +75,7 @@ public class SnowHelper {
     }
 
     public static void setSnow(BlockState futureContent, ServerWorld world, BlockPos pos) {
-        world.setBlockState(pos, ModBlocks.SNOW_BLOCK.getDefaultState());
+        world.setBlockState(pos, ModBlocks.SNOW.getDefaultState());
         if (futureContent.getBlock() instanceof TallPlantBlock && futureContent.get(TallPlantBlock.HALF) == DoubleBlockHalf.LOWER) {
             world.setBlockState(pos.up(), futureContent.with(TallPlantBlock.HALF, DoubleBlockHalf.UPPER));
         }
@@ -84,7 +84,7 @@ public class SnowHelper {
 
     public static void putInSnow(BlockState futureContent, WorldAccess world, BlockPos pos, int layers) {
         if (canContain(futureContent)) {
-            world.setBlockState(pos, ModBlocks.SNOW_BLOCK.getDefaultState().with(ISnowVariant.LAYERS, layers), Block.NOTIFY_LISTENERS, 512);
+            world.setBlockState(pos, ModBlocks.SNOW.getDefaultState().with(ISnowVariant.LAYERS, layers), Block.NOTIFY_LISTENERS, 512);
             if (futureContent.getBlock() instanceof TallPlantBlock && futureContent.get(TallPlantBlock.HALF) == DoubleBlockHalf.LOWER) {
                 world.setBlockState(pos.up(), futureContent.with(TallPlantBlock.HALF, DoubleBlockHalf.UPPER), Block.NOTIFY_LISTENERS, 512);
             }
@@ -94,7 +94,7 @@ public class SnowHelper {
 
     public static void putInSnow(BlockState futureContent, ServerWorld world, BlockPos pos, int layers) {
         if (canContain(futureContent)) {
-            world.setBlockState(pos, ModBlocks.SNOW_BLOCK.getDefaultState().with(ISnowVariant.LAYERS, layers));
+            world.setBlockState(pos, ModBlocks.SNOW.getDefaultState().with(ISnowVariant.LAYERS, layers));
             if (futureContent.getBlock() instanceof TallPlantBlock && futureContent.get(TallPlantBlock.HALF) == DoubleBlockHalf.LOWER) {
                 world.setBlockState(pos.up(), futureContent.with(TallPlantBlock.HALF, DoubleBlockHalf.UPPER));
             }
@@ -104,13 +104,13 @@ public class SnowHelper {
 
     public static void stackSnow(WorldAccess worldAccess, BlockPos pos, int currentLayers) {
         if (currentLayers != 8) {
-            worldAccess.setBlockState(pos, ModBlocks.SNOW_BLOCK.getDefaultState().with(ISnowVariant.LAYERS, currentLayers + 1), Block.NOTIFY_LISTENERS, 0);
+            worldAccess.setBlockState(pos, ModBlocks.SNOW.getDefaultState().with(ISnowVariant.LAYERS, currentLayers + 1), Block.NOTIFY_LISTENERS, 0);
         }
     }
 
     public static void stackSnow(ServerWorld serverWorld, BlockPos pos, int currentLayers) {
         if (currentLayers != 8) {
-            serverWorld.setBlockState(pos, ModBlocks.SNOW_BLOCK.getDefaultState().with(ISnowVariant.LAYERS, currentLayers + 1));
+            serverWorld.setBlockState(pos, ModBlocks.SNOW.getDefaultState().with(ISnowVariant.LAYERS, currentLayers + 1));
         }
     }
 
@@ -146,7 +146,7 @@ public class SnowHelper {
     }
 
     public static void addBlock(Block block) {
-        snowloggableBlock.put(block, ModBlocks.SNOW_BLOCK);
+        snowloggableBlock.put(block, ModBlocks.SNOW);
     }
 
     public static void addBlock(Block block, ISnowVariant snowVariant) {

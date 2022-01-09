@@ -75,13 +75,11 @@ TODO-FIRST-ITERATION
 
 
 
-LAST THING I DID:
-- fixing top block
-NEXT THING TO DO:
-- last spotted bug -> drop after onShovel removing layers(duplicating sunflower)
-- todo test in survival "onCreativeBreak?"
+LAST:
+- snowfall stacking fixed
+- translation
 
-
-
-BUGS:
-When placing on side, item in hand replaces snow when it could put itself in
+TODO:
+- replace vanilla snow
+- check snow gen under trees
+- prob more...

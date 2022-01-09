@@ -7,7 +7,6 @@ import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemGroup;
-import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import ss.snowiersnow.SnowierSnow;
@@ -16,11 +15,11 @@ import ss.snowiersnow.utils.SnowHelper;
 
 public class ModBlocks {
     public final static Identifier SNOW_BLOCK_ID = new Identifier(SnowierSnow.MODID, "snow");
-    public static DefaultSnowBlock SNOW_BLOCK;
+    public static DefaultSnowBlock SNOW;
     public static BlockEntityType<SnowContentBlockEntity> SNOW_BLOCK_ENTITY;
     static {
-        SNOW_BLOCK = new DefaultSnowBlock(FabricBlockSettings.copy(Blocks.SNOW));
-        SNOW_BLOCK_ENTITY = FabricBlockEntityTypeBuilder.create(SnowContentBlockEntity::new, SNOW_BLOCK).build(null);
+        SNOW = new DefaultSnowBlock(FabricBlockSettings.copy(Blocks.SNOW));
+        SNOW_BLOCK_ENTITY = FabricBlockEntityTypeBuilder.create(SnowContentBlockEntity::new, SNOW).build(null);
     }
 
     public static void register() {
@@ -54,8 +53,8 @@ public class ModBlocks {
             }
         });
 
-        Registry.register(Registry.BLOCK, SNOW_BLOCK_ID, SNOW_BLOCK);
+        Registry.register(Registry.BLOCK, SNOW_BLOCK_ID, SNOW);
         Registry.register(Registry.BLOCK_ENTITY_TYPE, SNOW_BLOCK_ID, SNOW_BLOCK_ENTITY);
-        Registry.register(Registry.ITEM, SNOW_BLOCK_ID, new BlockItem(SNOW_BLOCK, new FabricItemSettings().group(ItemGroup.MISC)));
+        Registry.register(Registry.ITEM, SNOW_BLOCK_ID, new BlockItem(SNOW, new FabricItemSettings().group(ItemGroup.DECORATIONS)));
     }
 }

@@ -90,7 +90,7 @@ public interface ISnowVariant extends BlockEntityProvider {
         Block blockToReplaceWith = Block.getBlockFromItem(context.getStack().getItem());
         int layers = state.get(ISnowVariant.LAYERS);
         if (blockToReplaceWith == this && layers < 8) {
-            if (context.canReplaceExisting() && state.getBlock() == ModBlocks.SNOW_BLOCK) {
+            if (context.canReplaceExisting() && state.getBlock() == ModBlocks.SNOW) {
                 return context.getSide() == Direction.UP;
             } else {
                 return true;
@@ -188,7 +188,7 @@ public interface ISnowVariant extends BlockEntityProvider {
             SnowHelper.playSound(world, pos, BlockSoundGroup.SNOW.getBreakSound());
             return ActionResult.success(world.isClient);
         }
-        if (stackInHand.isOf(ModBlocks.SNOW_BLOCK.asItem())) {
+        if (stackInHand.isOf(ModBlocks.SNOW.asItem())) {
             if (state.get(LAYERS) != 8) {
                 SnowHelper.stackSnow(world, pos, state.get(LAYERS));
                 if (!player.isCreative()) {
@@ -230,7 +230,7 @@ public interface ISnowVariant extends BlockEntityProvider {
     }
 
     default void dropSnow(PlayerEntity player, boolean hasSilkTouch) {
-        ItemStack snow = hasSilkTouch ? new ItemStack(ModBlocks.SNOW_BLOCK) : new ItemStack(Items.SNOWBALL);
+        ItemStack snow = hasSilkTouch ? new ItemStack(ModBlocks.SNOW) : new ItemStack(Items.SNOWBALL);
         if (!player.giveItemStack(snow)) {
             player.dropItem(snow, false);
         }

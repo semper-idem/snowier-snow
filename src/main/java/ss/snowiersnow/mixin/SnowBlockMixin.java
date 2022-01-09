@@ -12,7 +12,6 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
-import ss.snowiersnow.SnowierSnow;
 import ss.snowiersnow.block.ModBlocks;
 
 
@@ -38,7 +37,7 @@ public class SnowBlockMixin extends Block {
         BlockState blockState = ctx.getWorld().getBlockState(ctx.getBlockPos());
         if (blockState.getBlock() instanceof SnowBlock) {
             int i = blockState.get(LAYERS);
-            return ModBlocks.SNOW_BLOCK.getDefaultState().with(LAYERS, Math.min(8, i + 1));
+            return ModBlocks.SNOW.getDefaultState().with(LAYERS, Math.min(8, i + 1));
         } else {
             return super.getPlacementState(ctx);
         }
