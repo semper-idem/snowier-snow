@@ -4,7 +4,6 @@ import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
@@ -12,7 +11,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.mob.PiglinBrain;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
@@ -22,7 +20,6 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.state.property.IntProperty;
 import net.minecraft.state.property.Properties;
-import net.minecraft.tag.BlockTags;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.ItemScatterer;
@@ -56,7 +53,7 @@ public interface ISnowVariant extends BlockEntityProvider {
             else if (upperSnowLayers == 2) {
                 return VoxelShapes.fullCube(); //this is weird
             }
-        }//todo make not weird
+        }
         shape = VoxelShapes.combine(shape, SnowHelper.getContentState(world, pos).getCollisionShape(world, pos), BooleanBiFunction.OR);
         return VoxelShapes.combineAndSimplify(shape, VoxelShapes.fullCube(), BooleanBiFunction.AND);
     }
@@ -138,36 +135,6 @@ public interface ISnowVariant extends BlockEntityProvider {
         return !state.canPlaceAt(world, pos) ? Blocks.AIR.getDefaultState() : state;
     }
 
-    default ActionResult onShovel(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand) {
-        ItemStack stackInHand = player.getStackInHand(hand);
-        if (stackInHand.getItem() instanceof ShovelItem) {
-            Map<Enchantment, Integer> enchantmentsMap = EnchantmentHelper.fromNbt(stackInHand.getEnchantments());
-            SnowHelper.removeOrReduce(state, world, pos);
-            dropSnow(player, enchantmentsMap.containsKey(Enchantments.SILK_TOUCH));
-            damageShovel(stackInHand, enchantmentsMap.getOrDefault(Enchantments.UNBREAKING, 0));
-            world.emitGameEvent(player, GameEvent.BLOCK_CHANGE, pos);
-            SnowHelper.playSound(world, pos, BlockSoundGroup.SNOW.getBreakSound());
-            return ActionResult.success(world.isClient);
-        }
-        return ActionResult.PASS;
-    }
-
-    default void damageShovel(ItemStack stackInHand, int unbreakingLevel) {
-        if (unbreakingLevel > 0) {
-            if (new Random().nextInt(1 + unbreakingLevel) > 0) {
-                stackInHand.setDamage(stackInHand.getDamage() + 1);
-            }
-        } else {
-            stackInHand.setDamage(stackInHand.getDamage() + 1);
-        }
-    }
-
-    default void dropSnow(PlayerEntity player, boolean hasSilkTouch) {
-        ItemStack snow = hasSilkTouch ? new ItemStack(ModBlocks.SNOW_BLOCK) : new ItemStack(Items.SNOWBALL);
-        if (!player.giveItemStack(snow)) {
-            player.dropItem(snow, false);
-        }
-    }
 
     default void randomTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
         if (world.getLightLevel(LightType.BLOCK, pos) > 11) {
@@ -183,12 +150,11 @@ public interface ISnowVariant extends BlockEntityProvider {
 
     default void updateContent(BlockState content, WorldAccess world, BlockPos pos){
         if (!content.canPlaceAt(world, pos)) {
-                SnowHelper.setContentState(Blocks.AIR.getDefaultState(), world, pos);
-                if (world instanceof ServerWorld) {
-                    ItemScatterer.spawn((World) world, pos.getX(), pos.getY(), pos.getZ(), new ItemStack(content.getBlock()));
-                }
+            SnowHelper.setContentState(Blocks.AIR.getDefaultState(), world, pos);
+            if (world instanceof ServerWorld) {
+                ItemScatterer.spawn((World) world, pos.getX(), pos.getY(), pos.getZ(), new ItemStack(content.getBlock()));
+            }
         }
-
     }
 
     default float calcBlockBreakingDelta(BlockState state, PlayerEntity player, BlockView world, BlockPos pos) {
@@ -213,12 +179,31 @@ public interface ISnowVariant extends BlockEntityProvider {
     default ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
         ActionResult result;
         ItemStack stackInHand = player.getStackInHand(hand);
-        Block possibleContent = Block.getBlockFromItem(stackInHand.getItem());
+        if (stackInHand.getItem() instanceof ShovelItem) {
+            Map<Enchantment, Integer> enchantmentsMap = EnchantmentHelper.fromNbt(stackInHand.getEnchantments());
+            SnowHelper.removeOrReduce(state, world, pos);
+            dropSnow(player, enchantmentsMap.containsKey(Enchantments.SILK_TOUCH));
+            damageShovel(stackInHand, enchantmentsMap.getOrDefault(Enchantments.UNBREAKING, 0));
+            world.emitGameEvent(player, GameEvent.BLOCK_CHANGE, pos);
+            SnowHelper.playSound(world, pos, BlockSoundGroup.SNOW.getBreakSound());
+            return ActionResult.success(world.isClient);
+        }
+        if (stackInHand.isOf(ModBlocks.SNOW_BLOCK.asItem())) {
+            if (state.get(LAYERS) != 8) {
+                SnowHelper.stackSnow(world, pos, state.get(LAYERS));
+                if (!player.isCreative()) {
+                    stackInHand.decrement(1);
+                }
+                SnowHelper.playSound(world, pos, BlockSoundGroup.SNOW.getPlaceSound());
+                return ActionResult.success(world.isClient);
+            }
+        }
         if (SnowHelper.getContentState(world, pos).isAir()) {
-            if (SnowHelper.canContain(possibleContent)){
-                BlockState possibleContentState = possibleContent.getDefaultState();
-                if (possibleContentState.canPlaceAt(world, pos)) {
-                    SnowHelper.putInSnow(possibleContentState, world, pos, state.get(LAYERS));
+            Block possibleBlockContent = Block.getBlockFromItem(stackInHand.getItem());
+            if (SnowHelper.canContain(possibleBlockContent)) {
+                BlockState possibleBlockStateContent = possibleBlockContent.getDefaultState();
+                if (possibleBlockStateContent.canPlaceAt(world, pos)) {
+                    SnowHelper.putInSnow(possibleBlockStateContent, world, pos, state.get(LAYERS));
                     if (!player.isCreative()) {
                         stackInHand.decrement(1);
                     }
@@ -226,31 +211,35 @@ public interface ISnowVariant extends BlockEntityProvider {
                 }
             }
         }
-        if (stackInHand.isOf(ModBlocks.SNOW_BLOCK.asItem()) && state.get(LAYERS) != 8) {
-            SnowHelper.stackSnow(world, pos, state.get(LAYERS));
-            if (!player.isCreative()) {
-                stackInHand.decrement(1);
-            }
-            SnowHelper.playSound(world, pos, BlockSoundGroup.SNOW.getPlaceSound());
-            return ActionResult.success(world.isClient);
-            //todo extract to method
-        }
         if (state.get(ISnowVariant.LAYERS) <= 3 ) {
-            BlockState content = SnowHelper.getContentState(world, pos);
-            if ((result = content.onUse(world, player, hand, hit)) != ActionResult.PASS) {
+            if ((result = SnowHelper.getContentState(world, pos).onUse(world, player, hand, hit)) != ActionResult.PASS) {
                 return result;
             }
         }
-        if ((result = onShovel(state, world, pos, player, hand)) != ActionResult.PASS) {
-            return result;
-        }
         return ActionResult.PASS;
+    }
+
+    default void damageShovel(ItemStack stackInHand, int unbreakingLevel) {
+        if (unbreakingLevel > 0) {
+            if (new Random().nextInt(1 + unbreakingLevel) > 0) {
+                stackInHand.setDamage(stackInHand.getDamage() + 1);
+            }
+        } else {
+            stackInHand.setDamage(stackInHand.getDamage() + 1);
+        }
+    }
+
+    default void dropSnow(PlayerEntity player, boolean hasSilkTouch) {
+        ItemStack snow = hasSilkTouch ? new ItemStack(ModBlocks.SNOW_BLOCK) : new ItemStack(Items.SNOWBALL);
+        if (!player.giveItemStack(snow)) {
+            player.dropItem(snow, false);
+        }
     }
 
     default void onLandedUpon(World world, BlockState state, BlockPos pos, Entity entity, float fallDistance) {
         int combinedLayers = state.get(ISnowVariant.LAYERS);
         if (world.getBlockState(pos.down()) instanceof ISnowVariant) {
-            combinedLayers += 8; //Assuming snow block below is always full which doesnt have to be the case but...
+            combinedLayers += 8;
         }
         double contentHeight = 0;
         VoxelShape contentShape = SnowHelper.getContentState(world, pos).getCollisionShape(world, pos);
@@ -270,11 +259,11 @@ public interface ISnowVariant extends BlockEntityProvider {
 
     default void onBerryBushEntityCollision(BlockState state, World world, BlockPos pos, Entity entity) {
         if (entity instanceof LivingEntity && entity.getType() != EntityType.FOX && entity.getType() != EntityType.BEE) {
-            entity.slowMovement(state, new Vec3d(0.800000011920929D, 0.75D, 0.800000011920929D));
+            entity.slowMovement(state, new Vec3d(0.8, 0.7D, 0.8));
             if (!world.isClient && state.get(SweetBerryBushBlock.AGE) > 0 && (entity.lastRenderX != entity.getX() || entity.lastRenderZ != entity.getZ())) {
                 double d = Math.abs(entity.getX() - entity.lastRenderX);
                 double e = Math.abs(entity.getZ() - entity.lastRenderZ);
-                if (d >= 0.003000000026077032D || e >= 0.003000000026077032D) {
+                if (d >= 0.003 || e >= 0.003) {
                     entity.damage(DamageSource.SWEET_BERRY_BUSH, 1.0F);
                 }
             }

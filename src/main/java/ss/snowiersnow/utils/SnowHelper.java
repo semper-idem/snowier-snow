@@ -10,7 +10,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldEvents;
-import net.minecraft.world.chunk.WorldChunk;
 import ss.snowiersnow.block.ISnowVariant;
 import ss.snowiersnow.block.ModBlocks;
 import ss.snowiersnow.blockentity.SnowContentBlockEntity;
