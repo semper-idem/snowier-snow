@@ -86,12 +86,13 @@ DONE:
 LAST:
 - replace vanilla snow
 - check snow gen under trees
+- when placing vanilla snow place modded snow instead
 
 TODO:
-- when placing vanilla snow place modded snow instead
-- snow content drop / snow drop
+- remove "instance of SnowBlock" etc. prob with a tag
 - add snowfallable tag
-- speed up freezetoplayer feature(unsure)
+- snow content drop / snow drop
+- snow melt
 - config
     - max snow layers
     - snow stacking
@@ -100,4 +101,5 @@ TODO:
     - snowfall passable blocks(fences etc)
 - pre-calc whenever possible
 - never ending refactoring
+- speed up freezetoplayer feature(unsure)
 - prob more...

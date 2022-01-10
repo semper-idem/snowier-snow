@@ -89,8 +89,8 @@ public interface ISnowVariant extends BlockEntityProvider {
         }
         Block blockToReplaceWith = Block.getBlockFromItem(context.getStack().getItem());
         int layers = state.get(ISnowVariant.LAYERS);
-        if (blockToReplaceWith == this && layers < 8) {
-            if (context.canReplaceExisting() && state.getBlock() == ModBlocks.SNOW) {
+        if (blockToReplaceWith instanceof SnowBlock && layers < 8) {
+            if (context.canReplaceExisting()) {
                 return context.getSide() == Direction.UP;
             } else {
                 return true;
@@ -211,7 +211,7 @@ public interface ISnowVariant extends BlockEntityProvider {
                 }
             }
         }
-        if (state.get(ISnowVariant.LAYERS) <= 3 ) {
+        if (state.get(ISnowVariant.LAYERS) <= 4 || stackInHand.isOf(Blocks.SNOW.asItem())) {
             if ((result = SnowHelper.getContentState(world, pos).onUse(world, player, hand, hit)) != ActionResult.PASS) {
                 return result;
             }
