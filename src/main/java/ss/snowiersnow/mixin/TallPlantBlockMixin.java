@@ -1,7 +1,6 @@
 package ss.snowiersnow.mixin;
 
 import net.minecraft.block.*;
-import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -19,7 +18,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import ss.snowiersnow.block.ISnowVariant;
 import ss.snowiersnow.block.ModBlocks;
 import ss.snowiersnow.utils.SnowHelper;
 
@@ -48,14 +46,14 @@ public class TallPlantBlockMixin extends PlantBlock {
     @Inject(method = "onBreak", at = @At("HEAD"))
     private void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player, CallbackInfo ci) {
         if (state.get(TallPlantBlock.HALF) == DoubleBlockHalf.UPPER) {
-            BlockPos blockPos = pos.down();
-            BlockState blockState = world.getBlockState(blockPos);
-            if (blockState.getBlock() instanceof ISnowVariant) {
+            BlockPos posDown = pos.down();
+            BlockState stateDown = world.getBlockState(posDown);
+            if (stateDown.isIn(ModBlocks.SNOW_TAG)) {
                 if (!player.isCreative()) {
                     dropStack(world, pos, new ItemStack(this.getDefaultState().getBlock()));
                 }
-                SnowHelper.setContentState(Blocks.AIR.getDefaultState(), world, blockPos);
-                world.syncWorldEvent(player, WorldEvents.BLOCK_BROKEN, blockPos, Block.getRawIdFromState(state));
+                SnowHelper.setContentState(Blocks.AIR.getDefaultState(), world, posDown);
+                world.syncWorldEvent(player, WorldEvents.BLOCK_BROKEN, posDown, Block.getRawIdFromState(state));
             }
         }
         super.onBreak(world, pos, state, player);
@@ -66,8 +64,8 @@ public class TallPlantBlockMixin extends PlantBlock {
         if (state.get(TallPlantBlock.HALF) == DoubleBlockHalf.LOWER) {
             cir.setReturnValue(super.canPlaceAt(state, world, pos));
         } else {
-            BlockState blockState = world.getBlockState(pos.down());
-            if (blockState.getBlock() instanceof ISnowVariant) {
+            BlockState stateDown = world.getBlockState(pos.down());
+            if (stateDown.isIn(ModBlocks.SNOW_TAG)) {
                 BlockState content = SnowHelper.getContentState(world, pos);
                 if (content.getBlock() instanceof TallPlantBlock) {
                     cir.setReturnValue(content.get(TallPlantBlock.HALF) == DoubleBlockHalf.LOWER);

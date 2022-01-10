@@ -39,13 +39,16 @@ import ss.snowiersnow.utils.SnowHelper;
 import java.util.Map;
 import java.util.Random;
 
+
+import static ss.snowiersnow.block.ModBlocks.SNOW_TAG;
+
 public interface ISnowVariant extends BlockEntityProvider {
     IntProperty LAYERS = Properties.LAYERS;
     VoxelShape[] LAYERS_TO_SHAPE = new VoxelShape[]{VoxelShapes.empty(), Block.createCuboidShape(0.0D, 0.0D, 0.0D, 16.0D, 2.0D, 16.0D), Block.createCuboidShape(0.0D, 0.0D, 0.0D, 16.0D, 4.0D, 16.0D), Block.createCuboidShape(0.0D, 0.0D, 0.0D, 16.0D, 6.0D, 16.0D), Block.createCuboidShape(0.0D, 0.0D, 0.0D, 16.0D, 8.0D, 16.0D), Block.createCuboidShape(0.0D, 0.0D, 0.0D, 16.0D, 10.0D, 16.0D), Block.createCuboidShape(0.0D, 0.0D, 0.0D, 16.0D, 12.0D, 16.0D), Block.createCuboidShape(0.0D, 0.0D, 0.0D, 16.0D, 14.0D, 16.0D), Block.createCuboidShape(0.0D, 0.0D, 0.0D, 16.0D, 16.0D, 16.0D)};
 
     default VoxelShape getCollisionShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
         VoxelShape shape = Blocks.SNOW.getCollisionShape(state, world,pos, context);
-        if (world.getBlockState(pos.up()).getBlock() instanceof ISnowVariant) {
+        if (world.getBlockState(pos.up()).getBlock().getDefaultState().isIn(SNOW_TAG) ) {
             int upperSnowLayers = world.getBlockState(pos.up()).get(LAYERS);
             if (upperSnowLayers == 1) {
                 shape = LAYERS_TO_SHAPE[state.get(LAYERS) - 1];
@@ -73,7 +76,7 @@ public interface ISnowVariant extends BlockEntityProvider {
         if (!surface.isOf(Blocks.ICE) && !surface.isOf(Blocks.PACKED_ICE) && !surface.isOf(Blocks.BARRIER)) {
             if (!surface.isOf(Blocks.HONEY_BLOCK) && !surface.isOf(Blocks.SOUL_SAND)) {
                 return Block.isFaceFullSquare(surface.getCollisionShape(world, pos.down()), Direction.UP)
-                    || surface.isOf((Block)this)
+                    || surface.isIn(SNOW_TAG)
                     && surface.get(ISnowVariant.LAYERS) == 8;
             } else {
                 return true;
@@ -89,7 +92,7 @@ public interface ISnowVariant extends BlockEntityProvider {
         }
         Block blockToReplaceWith = Block.getBlockFromItem(context.getStack().getItem());
         int layers = state.get(ISnowVariant.LAYERS);
-        if (blockToReplaceWith instanceof SnowBlock && layers < 8) {
+        if (blockToReplaceWith.getDefaultState().isIn(SNOW_TAG) && layers < 8) {
             if (context.canReplaceExisting()) {
                 return context.getSide() == Direction.UP;
             } else {
@@ -109,7 +112,7 @@ public interface ISnowVariant extends BlockEntityProvider {
         if (newState.isAir()) {
             BlockState content = SnowHelper.getContentState(world, pos);
             if (!content.isAir()) {
-                if (state.getBlock() instanceof ISnowVariant) {
+                if (state.isIn(SNOW_TAG)) {
                     boolean contentShouldBreak = SnowHelper.contentShouldBreak(state.get(LAYERS), content);
                     if (contentShouldBreak) {
                         if (SnowHelper.isContentBase(content)) {
@@ -188,7 +191,7 @@ public interface ISnowVariant extends BlockEntityProvider {
             SnowHelper.playSound(world, pos, BlockSoundGroup.SNOW.getBreakSound());
             return ActionResult.success(world.isClient);
         }
-        if (stackInHand.isOf(ModBlocks.SNOW.asItem())) {
+        if (Block.getBlockFromItem(stackInHand.getItem()).getDefaultState().isIn(SNOW_TAG)) {
             if (state.get(LAYERS) != 8) {
                 SnowHelper.stackSnow(world, pos, state.get(LAYERS));
                 if (!player.isCreative()) {
@@ -211,7 +214,7 @@ public interface ISnowVariant extends BlockEntityProvider {
                 }
             }
         }
-        if (state.get(ISnowVariant.LAYERS) <= 4 || stackInHand.isOf(Blocks.SNOW.asItem())) {
+        if (state.get(ISnowVariant.LAYERS) < 4) {
             if ((result = SnowHelper.getContentState(world, pos).onUse(world, player, hand, hit)) != ActionResult.PASS) {
                 return result;
             }
@@ -238,7 +241,7 @@ public interface ISnowVariant extends BlockEntityProvider {
 
     default void onLandedUpon(World world, BlockState state, BlockPos pos, Entity entity, float fallDistance) {
         int combinedLayers = state.get(ISnowVariant.LAYERS);
-        if (world.getBlockState(pos.down()) instanceof ISnowVariant) {
+        if (world.getBlockState(pos.down()).isIn(SNOW_TAG)) {
             combinedLayers += 8;
         }
         double contentHeight = 0;

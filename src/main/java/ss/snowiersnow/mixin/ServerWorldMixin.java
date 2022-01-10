@@ -5,13 +5,16 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.util.registry.RegistryKey;
-import net.minecraft.world.*;
+import net.minecraft.world.Heightmap;
+import net.minecraft.world.MutableWorldProperties;
+import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.dimension.DimensionType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import ss.snowiersnow.block.ModBlocks;
 import ss.snowiersnow.utils.BiomeHelper;
 import ss.snowiersnow.utils.SnowHelper;
 
@@ -37,7 +40,7 @@ public abstract class ServerWorldMixin extends World {
         BlockState state = this.getBlockState(pos);
         if (BiomeHelper.canSetSnow(this, pos, state)){
             int layers = 0;
-            if (state.getBlock() instanceof SnowBlock) {
+            if (state.isIn(ModBlocks.SNOW_TAG)) {
                 layers = state.get(SnowBlock.LAYERS);
                 BlockState blockBelow = chunk.getBlockState(pos.down());
                 if (blockBelow.getBlock() instanceof SnowBlock) {

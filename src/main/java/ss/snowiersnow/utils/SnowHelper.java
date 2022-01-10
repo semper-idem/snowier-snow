@@ -6,6 +6,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
+import net.minecraft.tag.Tag;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.WorldAccess;
@@ -51,7 +52,7 @@ public class SnowHelper {
 
     public static void setOrStackSnow(WorldAccess worldAccess, BlockPos pos) {
         BlockState possibleContent = worldAccess.getBlockState(pos);
-        if (possibleContent.getBlock() instanceof ISnowVariant) {
+        if (possibleContent.isIn(ModBlocks.SNOW_TAG)) {
             stackSnow(worldAccess, pos, possibleContent.get(ISnowVariant.LAYERS));
         } else if (canContain(possibleContent) || possibleContent.isAir()) {
             setSnow(possibleContent, worldAccess, pos);
@@ -59,7 +60,7 @@ public class SnowHelper {
     }
     public static void setOrStackSnow(ServerWorld serverWorld, BlockPos pos) {
         BlockState possibleContent = serverWorld.getBlockState(pos);
-        if (possibleContent.getBlock() instanceof ISnowVariant) {
+        if (possibleContent.isIn(ModBlocks.SNOW_TAG)) {
             stackSnow(serverWorld, pos, possibleContent.get(ISnowVariant.LAYERS));
         } else if (canContain(possibleContent) || possibleContent.isAir())  {
             setSnow(possibleContent, serverWorld, pos);
@@ -145,11 +146,15 @@ public class SnowHelper {
         mustHaveBase.add(TallPlantBlock.class);
     }
 
-    public static void addBlock(Block block) {
+    public static void addSnowloggableBlock(Block block) {
         snowloggableBlock.put(block, ModBlocks.SNOW);
     }
 
-    public static void addBlock(Block block, ISnowVariant snowVariant) {
+    public static void addSnowloggableBlockTag(Tag.Identified<Block> blockTag) {
+        blockTag.values().forEach(SnowHelper::addSnowloggableBlock);
+    }
+
+    public static void addSnowloggableBlock(Block block, ISnowVariant snowVariant) {
         snowloggableBlock.put(block, snowVariant);
     }
 

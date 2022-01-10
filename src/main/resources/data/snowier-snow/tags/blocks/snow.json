@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "snowier-snow:snow"
+    "snowier-snow:snow",
+    "minecraft:snow"
   ]
 }

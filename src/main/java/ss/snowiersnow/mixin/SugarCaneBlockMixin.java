@@ -13,10 +13,8 @@ import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import ss.snowiersnow.block.ISnowVariant;
 import ss.snowiersnow.block.ModBlocks;
 import ss.snowiersnow.blockentity.SnowContentBlockEntity;
-import ss.snowiersnow.SnowierSnow;
 
 import java.util.Optional;
 import java.util.Random;
@@ -41,7 +39,7 @@ public class SugarCaneBlockMixin extends Block {
 
     @Inject(at = @At(value = "HEAD"), method = "canPlaceAt", cancellable = true)
     private void onGetBlockStateInCanPlaceAt(BlockState state, WorldView world, BlockPos pos, CallbackInfoReturnable<Boolean> cir){
-        if (world.getBlockState(pos.down()).getBlock() instanceof ISnowVariant) {
+        if (world.getBlockState(pos.down()).isIn(ModBlocks.SNOW_TAG)) {
             Optional<SnowContentBlockEntity> snowierBlockEntity = world.getBlockEntity(pos.down(), ModBlocks.SNOW_BLOCK_ENTITY);
             if (snowierBlockEntity.isPresent()) {
                 if (snowierBlockEntity.get().getContent().isOf(Blocks.SUGAR_CANE)){

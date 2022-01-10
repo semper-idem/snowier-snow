@@ -4,7 +4,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.LightType;
 import net.minecraft.world.WorldView;
-import ss.snowiersnow.block.ISnowVariant;
 import ss.snowiersnow.block.ModBlocks;
 
 public class BiomeHelper {
@@ -34,7 +33,7 @@ public class BiomeHelper {
     }
 
     private static boolean isSnowOrSnowloggable(BlockState state) {
-        return state.getBlock() instanceof ISnowVariant || SnowHelper.canContain(state);
+        return state.isIn(ModBlocks.SNOW_TAG) || SnowHelper.canContain(state);
     }
 
     private static boolean canPlaceAt(WorldView world, BlockPos pos) {

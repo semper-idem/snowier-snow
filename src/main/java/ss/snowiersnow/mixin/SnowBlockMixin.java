@@ -53,10 +53,10 @@ public class SnowBlockMixin extends Block {
      */
     @Overwrite
     public boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos) {
-        BlockState blockState = world.getBlockState(pos.down());
-        if (!blockState.isOf(Blocks.ICE) && !blockState.isOf(Blocks.PACKED_ICE) && !blockState.isOf(Blocks.BARRIER)) {
-            if (!blockState.isOf(Blocks.HONEY_BLOCK) && !blockState.isOf(Blocks.SOUL_SAND)) {
-                return Block.isFaceFullSquare(blockState.getCollisionShape(world, pos.down()), Direction.UP) || blockState.getBlock() instanceof SnowBlock && blockState.get(LAYERS) == 8;
+        BlockState stateDown = world.getBlockState(pos.down());
+        if (!stateDown.isOf(Blocks.ICE) && !stateDown.isOf(Blocks.PACKED_ICE) && !stateDown.isOf(Blocks.BARRIER)) {
+            if (!stateDown.isOf(Blocks.HONEY_BLOCK) && !stateDown.isOf(Blocks.SOUL_SAND)) {
+                return Block.isFaceFullSquare(stateDown.getCollisionShape(world, pos.down()), Direction.UP) || stateDown.isIn(ModBlocks.SNOW_TAG) && stateDown.get(LAYERS) == 8;
             } else {
                 return true;
             }
