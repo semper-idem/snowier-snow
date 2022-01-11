@@ -8,7 +8,6 @@ import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemGroup;
-import net.minecraft.tag.BlockTags;
 import net.minecraft.tag.Tag;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
@@ -18,12 +17,18 @@ import ss.snowiersnow.utils.SnowHelper;
 
 public class ModBlocks {
     public static final Tag<Block> SNOW_TAG = TagFactory.BLOCK.create(new Identifier("snowier-snow", "snow"));
-    public final static Identifier SNOW_BLOCK_ID = new Identifier(SnowierSnow.MODID, "snow");
-    public static DefaultSnowBlock SNOW;
-    public static BlockEntityType<SnowContentBlockEntity> SNOW_BLOCK_ENTITY;
+    public final static Identifier DEFAULT_SNOW_ID = new Identifier(SnowierSnow.MODID, "snow");
+    public static DefaultSnowBlock DEFAULT_SNOW;
+    public static BlockEntityType<SnowContentBlockEntity> SNOW_ENTITY;
+
+//    public final static Identifier FENCE_SNOW_ID = new Identifier(SnowierSnow.MODID, "fence_snow");
+//    public static FenceSnowBlock FENCE_SNOW;
+//    public static BlockEntityType<SnowContentBlockEntity> FENCE_SNOW_ENTITY;
     static {
-        SNOW = new DefaultSnowBlock(FabricBlockSettings.copy(Blocks.SNOW));
-        SNOW_BLOCK_ENTITY = FabricBlockEntityTypeBuilder.create(SnowContentBlockEntity::new, SNOW).build(null);
+        DEFAULT_SNOW = new DefaultSnowBlock(FabricBlockSettings.copy(Blocks.SNOW));
+        SNOW_ENTITY = FabricBlockEntityTypeBuilder.create(SnowContentBlockEntity::new, DEFAULT_SNOW).build(null);
+//        FENCE_SNOW = new FenceSnowBlock(FabricBlockSettings.copy(Blocks.OAK_FENCE));
+//        FENCE_SNOW_ENTITY = FabricBlockEntityTypeBuilder.create(SnowContentBlockEntity::new, FENCE_SNOW).build(null);
     }
 
     public static void register() {
@@ -35,13 +40,23 @@ public class ModBlocks {
         SnowHelper.addSnowloggableBlock(Blocks.TALL_GRASS);
         SnowHelper.addSnowloggableBlock(Blocks.LARGE_FERN);
         SnowHelper.addSnowloggableBlock(Blocks.SWEET_BERRY_BUSH);
-        SnowHelper.addSnowloggableBlockTag(BlockTags.FLOWERS);
-        SnowHelper.addSnowloggableBlockTag(BlockTags.SAPLINGS);
-//        SnowHelper.addSnowloggableBlockTag(BlockTags.FENCE_GATES);
-//        SnowHelper.addSnowloggableBlockTag(BlockTags.FENCES);
 
-        Registry.register(Registry.BLOCK, SNOW_BLOCK_ID, SNOW);
-        Registry.register(Registry.BLOCK_ENTITY_TYPE, SNOW_BLOCK_ID, SNOW_BLOCK_ENTITY);
-        Registry.register(Registry.ITEM, SNOW_BLOCK_ID, new BlockItem(SNOW, new FabricItemSettings().group(ItemGroup.DECORATIONS)));
+        Registry.BLOCK.forEach( block -> {
+            if (block instanceof FlowerBlock ||
+                block instanceof SaplingBlock ||
+                block instanceof TallFlowerBlock) {
+                SnowHelper.addSnowloggableBlock(block);
+            }
+//            else if (block instanceof FenceBlock) {
+//                SnowHelper.addSnowloggableBlock(block, FENCE_SNOW);
+//            }
+        });
+
+        Registry.register(Registry.BLOCK, DEFAULT_SNOW_ID, DEFAULT_SNOW);
+        Registry.register(Registry.BLOCK_ENTITY_TYPE, DEFAULT_SNOW_ID, SNOW_ENTITY);
+        Registry.register(Registry.ITEM, DEFAULT_SNOW_ID, new BlockItem(DEFAULT_SNOW, new FabricItemSettings().group(ItemGroup.DECORATIONS)));
+
+//        Registry.register(Registry.BLOCK, FENCE_SNOW_ID, FENCE_SNOW);
+//        Registry.register(Registry.BLOCK_ENTITY_TYPE, FENCE_SNOW_ID, FENCE_SNOW_ENTITY);
     }
 }

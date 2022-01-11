@@ -90,7 +90,7 @@ LAST:
 - remove "instance of SnowBlock" etc. prob with a tag
 
 TODO:
-- add snowfallable tag
+- add snow fall thru tag ?
 - snow content drop / snow drop
 - snow melt
 - config

@@ -9,7 +9,6 @@ import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.util.Clearable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import ss.snowiersnow.SnowierSnow;
 import ss.snowiersnow.block.ModBlocks;
 
 public class SnowContentBlockEntity extends BlockEntity implements Clearable {
@@ -17,7 +16,7 @@ public class SnowContentBlockEntity extends BlockEntity implements Clearable {
     private BlockState content = Blocks.AIR.getDefaultState();
 
     public SnowContentBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlocks.SNOW_BLOCK_ENTITY, pos, state);
+        super(ModBlocks.SNOW_ENTITY, pos, state);
     }
 
     public void setContent(BlockState state) {

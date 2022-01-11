@@ -42,7 +42,7 @@ import java.util.Random;
 
 import static ss.snowiersnow.block.ModBlocks.SNOW_TAG;
 
-public interface ISnowVariant extends BlockEntityProvider {
+public interface SnowWithContent extends BlockEntityProvider {
     IntProperty LAYERS = Properties.LAYERS;
     VoxelShape[] LAYERS_TO_SHAPE = new VoxelShape[]{VoxelShapes.empty(), Block.createCuboidShape(0.0D, 0.0D, 0.0D, 16.0D, 2.0D, 16.0D), Block.createCuboidShape(0.0D, 0.0D, 0.0D, 16.0D, 4.0D, 16.0D), Block.createCuboidShape(0.0D, 0.0D, 0.0D, 16.0D, 6.0D, 16.0D), Block.createCuboidShape(0.0D, 0.0D, 0.0D, 16.0D, 8.0D, 16.0D), Block.createCuboidShape(0.0D, 0.0D, 0.0D, 16.0D, 10.0D, 16.0D), Block.createCuboidShape(0.0D, 0.0D, 0.0D, 16.0D, 12.0D, 16.0D), Block.createCuboidShape(0.0D, 0.0D, 0.0D, 16.0D, 14.0D, 16.0D), Block.createCuboidShape(0.0D, 0.0D, 0.0D, 16.0D, 16.0D, 16.0D)};
 
@@ -77,7 +77,7 @@ public interface ISnowVariant extends BlockEntityProvider {
             if (!surface.isOf(Blocks.HONEY_BLOCK) && !surface.isOf(Blocks.SOUL_SAND)) {
                 return Block.isFaceFullSquare(surface.getCollisionShape(world, pos.down()), Direction.UP)
                     || surface.isIn(SNOW_TAG)
-                    && surface.get(ISnowVariant.LAYERS) == 8;
+                    && surface.get(SnowWithContent.LAYERS) == 8;
             } else {
                 return true;
             }
@@ -91,7 +91,7 @@ public interface ISnowVariant extends BlockEntityProvider {
             return false;
         }
         Block blockToReplaceWith = Block.getBlockFromItem(context.getStack().getItem());
-        int layers = state.get(ISnowVariant.LAYERS);
+        int layers = state.get(SnowWithContent.LAYERS);
         if (blockToReplaceWith.getDefaultState().isIn(SNOW_TAG) && layers < 8) {
             if (context.canReplaceExisting()) {
                 return context.getSide() == Direction.UP;
@@ -193,7 +193,7 @@ public interface ISnowVariant extends BlockEntityProvider {
         }
         if (Block.getBlockFromItem(stackInHand.getItem()).getDefaultState().isIn(SNOW_TAG)) {
             if (state.get(LAYERS) != 8) {
-                SnowHelper.stackSnow(world, pos, state.get(LAYERS));
+                SnowHelper.stackSnow(state, world, pos);
                 if (!player.isCreative()) {
                     stackInHand.decrement(1);
                 }
@@ -214,7 +214,7 @@ public interface ISnowVariant extends BlockEntityProvider {
                 }
             }
         }
-        if (state.get(ISnowVariant.LAYERS) < 4) {
+        if (state.get(SnowWithContent.LAYERS) < 4) {
             if ((result = SnowHelper.getContentState(world, pos).onUse(world, player, hand, hit)) != ActionResult.PASS) {
                 return result;
             }
@@ -233,14 +233,14 @@ public interface ISnowVariant extends BlockEntityProvider {
     }
 
     default void dropSnow(PlayerEntity player, boolean hasSilkTouch) {
-        ItemStack snow = hasSilkTouch ? new ItemStack(ModBlocks.SNOW) : new ItemStack(Items.SNOWBALL);
+        ItemStack snow = hasSilkTouch ? new ItemStack(ModBlocks.DEFAULT_SNOW) : new ItemStack(Items.SNOWBALL);
         if (!player.giveItemStack(snow)) {
             player.dropItem(snow, false);
         }
     }
 
     default void onLandedUpon(World world, BlockState state, BlockPos pos, Entity entity, float fallDistance) {
-        int combinedLayers = state.get(ISnowVariant.LAYERS);
+        int combinedLayers = state.get(SnowWithContent.LAYERS);
         if (world.getBlockState(pos.down()).isIn(SNOW_TAG)) {
             combinedLayers += 8;
         }
