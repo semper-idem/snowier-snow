@@ -4,16 +4,18 @@
   "package": "ss.snowiersnow.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "AbstractBlockMixin",
-    "BambooBlockMixin",
     "BiomeMixin",
+    "ClientPlayerInteractionManagerMixin",
     "FreezeTopLayerFeatureMixin",
     "ServerWorldMixin",
-    "SnowBlockMixin",
-    "SnowyBlockMixin",
-    "SpreadableBlockMixin",
-    "SugarCaneBlockMixin",
-    "TallPlantBlockMixin"
+    "block.AbstractBlockMixin",
+    "block.BambooBlockMixin",
+    "block.FenceBlockMixin",
+    "block.SnowBlockMixin",
+    "block.SnowyBlockMixin",
+    "block.SpreadableBlockMixin",
+    "block.SugarCaneBlockMixin",
+    "block.TallPlantBlockMixin"
   ],
   "client": [
   ],

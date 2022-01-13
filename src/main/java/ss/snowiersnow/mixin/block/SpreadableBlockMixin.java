@@ -1,4 +1,4 @@
-package ss.snowiersnow.mixin;
+package ss.snowiersnow.mixin.block;
 
 import net.minecraft.block.*;
 import net.minecraft.server.world.ServerWorld;
@@ -15,7 +15,6 @@ import java.util.Random;
 
 @Mixin(SpreadableBlock.class)
 public class SpreadableBlockMixin extends SnowyBlock {
-
 
     protected SpreadableBlockMixin(Settings settings) {
         super(settings);

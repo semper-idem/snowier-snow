@@ -39,7 +39,6 @@ import ss.snowiersnow.utils.SnowHelper;
 import java.util.Map;
 import java.util.Random;
 
-
 import static ss.snowiersnow.block.ModBlocks.SNOW_TAG;
 
 public interface SnowWithContent extends BlockEntityProvider {
@@ -118,23 +117,25 @@ public interface SnowWithContent extends BlockEntityProvider {
                         if (SnowHelper.isContentBase(content)) {
                             world.setBlockState(pos.up(), Blocks.AIR.getDefaultState());
                         }
+                        world.setBlockState(pos, state);
                         SnowHelper.setContentState(Blocks.AIR.getDefaultState(), world, pos);
                         ItemScatterer.spawn(world, pos.getX(), pos.getY(), pos.getZ(), new ItemStack(content.getBlock()));
-                        world.setBlockState(pos, state);
                     } else {
                         world.setBlockState(pos, content);
-                        content.getBlock().onPlaced(world, pos, content, null ,null);
+                        world.removeBlockEntity(pos);
                     }
                 }
+            } else if (SnowHelper.canContain(newState)) {
+                world.setBlockState(pos, state);
+                SnowHelper.setContentState(newState, world, pos);
             }
-        } else if (SnowHelper.canContain(newState)) {
-            world.setBlockState(pos, state);
-            SnowHelper.setContentState(newState, world, pos);
         }
     }
 
     default BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos) {
-        updateContent(SnowHelper.getContentState(world, pos), world, pos);
+        BlockState content = SnowHelper.getContentState(world, pos);
+        validatePlacement(content, world, pos);
+        updateContent(content, direction, neighborState, world, pos, neighborPos);
         return !state.canPlaceAt(world, pos) ? Blocks.AIR.getDefaultState() : state;
     }
 
@@ -144,20 +145,25 @@ public interface SnowWithContent extends BlockEntityProvider {
             SnowHelper.removeOrReduce(state, world, pos);
         }
         BlockState content = SnowHelper.getContentState(world, pos);
-        updateContent(content, world, pos);
+        validatePlacement(content, world, pos);
 
         if (content.hasRandomTicks()) {
             content.randomTick(world, pos, random);
         }
     }
 
-    default void updateContent(BlockState content, WorldAccess world, BlockPos pos){
+    default void validatePlacement(BlockState content, WorldAccess world, BlockPos pos){
         if (!content.canPlaceAt(world, pos)) {
             SnowHelper.setContentState(Blocks.AIR.getDefaultState(), world, pos);
             if (world instanceof ServerWorld) {
                 ItemScatterer.spawn((World) world, pos.getX(), pos.getY(), pos.getZ(), new ItemStack(content.getBlock()));
             }
         }
+    }
+
+    default void updateContent(BlockState content, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos){
+        BlockState updatedContent = content.getStateForNeighborUpdate(direction, neighborState, world, pos, neighborPos);
+        SnowHelper.setContentState(updatedContent, world, pos);
     }
 
     default float calcBlockBreakingDelta(BlockState state, PlayerEntity player, BlockView world, BlockPos pos) {

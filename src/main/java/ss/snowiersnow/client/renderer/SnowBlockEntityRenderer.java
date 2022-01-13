@@ -16,9 +16,9 @@ import ss.snowiersnow.blockentity.SnowContentBlockEntity;
 import java.util.Random;
 
 @Environment(EnvType.CLIENT)
-public class SnowierBlockEntityRenderer implements BlockEntityRenderer<SnowContentBlockEntity> {
+public class SnowBlockEntityRenderer implements BlockEntityRenderer<SnowContentBlockEntity> {
     private static final Random R = new Random();
-    public SnowierBlockEntityRenderer(BlockEntityRendererFactory.Context ctx) {}
+    public SnowBlockEntityRenderer(BlockEntityRendererFactory.Context ctx) {}
 
     @Override
     public void render(SnowContentBlockEntity entity, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {

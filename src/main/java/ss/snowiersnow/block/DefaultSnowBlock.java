@@ -85,4 +85,9 @@ public class DefaultSnowBlock extends SnowBlock implements SnowWithContent {
     public BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos) {
         return SnowWithContent.super.getStateForNeighborUpdate(state, direction, neighborState, world, pos, neighborPos);
     }
+
+    @Override
+    public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
+        super.onBreak(world, pos, state, player);
+    }
 }

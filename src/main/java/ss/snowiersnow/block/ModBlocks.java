@@ -21,14 +21,9 @@ public class ModBlocks {
     public static DefaultSnowBlock DEFAULT_SNOW;
     public static BlockEntityType<SnowContentBlockEntity> SNOW_ENTITY;
 
-//    public final static Identifier FENCE_SNOW_ID = new Identifier(SnowierSnow.MODID, "fence_snow");
-//    public static FenceSnowBlock FENCE_SNOW;
-//    public static BlockEntityType<SnowContentBlockEntity> FENCE_SNOW_ENTITY;
     static {
         DEFAULT_SNOW = new DefaultSnowBlock(FabricBlockSettings.copy(Blocks.SNOW));
         SNOW_ENTITY = FabricBlockEntityTypeBuilder.create(SnowContentBlockEntity::new, DEFAULT_SNOW).build(null);
-//        FENCE_SNOW = new FenceSnowBlock(FabricBlockSettings.copy(Blocks.OAK_FENCE));
-//        FENCE_SNOW_ENTITY = FabricBlockEntityTypeBuilder.create(SnowContentBlockEntity::new, FENCE_SNOW).build(null);
     }
 
     public static void register() {
@@ -44,19 +39,15 @@ public class ModBlocks {
         Registry.BLOCK.forEach( block -> {
             if (block instanceof FlowerBlock ||
                 block instanceof SaplingBlock ||
-                block instanceof TallFlowerBlock) {
+                block instanceof TallFlowerBlock ||
+                 block instanceof FenceBlock)
+            {
                 SnowHelper.addSnowloggableBlock(block);
             }
-//            else if (block instanceof FenceBlock) {
-//                SnowHelper.addSnowloggableBlock(block, FENCE_SNOW);
-//            }
         });
 
         Registry.register(Registry.BLOCK, DEFAULT_SNOW_ID, DEFAULT_SNOW);
         Registry.register(Registry.BLOCK_ENTITY_TYPE, DEFAULT_SNOW_ID, SNOW_ENTITY);
         Registry.register(Registry.ITEM, DEFAULT_SNOW_ID, new BlockItem(DEFAULT_SNOW, new FabricItemSettings().group(ItemGroup.DECORATIONS)));
-
-//        Registry.register(Registry.BLOCK, FENCE_SNOW_ID, FENCE_SNOW);
-//        Registry.register(Registry.BLOCK_ENTITY_TYPE, FENCE_SNOW_ID, FENCE_SNOW_ENTITY);
     }
 }

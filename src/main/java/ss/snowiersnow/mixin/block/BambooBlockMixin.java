@@ -1,4 +1,4 @@
-package ss.snowiersnow.mixin;
+package ss.snowiersnow.mixin.block;
 
 import net.minecraft.block.BambooBlock;
 import net.minecraft.block.Block;
