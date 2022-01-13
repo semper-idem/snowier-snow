@@ -16,7 +16,7 @@ public class SnowContentBlockEntity extends BlockEntity implements Clearable {
     private BlockState content = Blocks.AIR.getDefaultState();
 
     public SnowContentBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlocks.SNOW_ENTITY, pos, state);
+        super(ModBlocks.SNOW_WITH_CONTENT_ENTITY, pos, state);
     }
 
     public void setContent(BlockState state) {

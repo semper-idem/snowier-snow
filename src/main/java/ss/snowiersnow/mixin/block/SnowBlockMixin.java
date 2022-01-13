@@ -42,7 +42,7 @@ public class SnowBlockMixin extends Block {
         BlockState blockState = ctx.getWorld().getBlockState(ctx.getBlockPos());
         if (blockState.getBlock() instanceof SnowBlock) {
             int i = blockState.get(LAYERS);
-            return ModBlocks.DEFAULT_SNOW.getDefaultState().with(LAYERS, Math.min(8, i + 1));
+            return ModBlocks.SNOW_WITH_CONTENT.getDefaultState().with(LAYERS, Math.min(8, i + 1));
         } else {
             return super.getPlacementState(ctx);
         }
@@ -70,7 +70,7 @@ public class SnowBlockMixin extends Block {
      */
     @Override
     public void onPlaced(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack) {
-        world.setBlockState(pos, ModBlocks.DEFAULT_SNOW.getStateWithProperties(state));
+        world.setBlockState(pos, ModBlocks.SNOW_WITH_CONTENT.getStateWithProperties(state));
     }
 
     /**

@@ -27,7 +27,7 @@ public class SpreadableBlockMixin extends SnowyBlock {
     private static boolean canSurvive(BlockState state, WorldView world, BlockPos pos) {
         BlockPos posUp = pos.up();
         BlockState stateUp = world.getBlockState(posUp);
-        if (stateUp.isOf(ModBlocks.DEFAULT_SNOW)) {
+        if (stateUp.isOf(ModBlocks.SNOW_WITH_CONTENT)) {
             return true;
         } else if (stateUp.getFluidState().getLevel() == 8) {
             return false;
@@ -52,7 +52,7 @@ public class SpreadableBlockMixin extends SnowyBlock {
                     BlockPos blockPos = pos.add(random.nextInt(3) - 1, random.nextInt(5) - 3, random.nextInt(3) - 1);
                     if (world.getBlockState(blockPos).isOf(Blocks.DIRT) && canSpread(blockState, world, blockPos)) {
                         BlockState blockStateUp = world.getBlockState(blockPos.up());
-                        boolean isUpSnow = (blockStateUp.isOf(Blocks.SNOW) || blockStateUp.isOf(ModBlocks.DEFAULT_SNOW));
+                        boolean isUpSnow = (blockStateUp.isOf(Blocks.SNOW) || blockStateUp.isOf(ModBlocks.SNOW_WITH_CONTENT));
                         world.setBlockState(blockPos, (BlockState)blockState.with(SNOWY, isUpSnow));
                     }
                 }

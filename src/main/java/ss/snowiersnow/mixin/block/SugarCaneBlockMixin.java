@@ -40,7 +40,7 @@ public class SugarCaneBlockMixin extends Block {
     @Inject(at = @At(value = "HEAD"), method = "canPlaceAt", cancellable = true)
     private void onGetBlockStateInCanPlaceAt(BlockState state, WorldView world, BlockPos pos, CallbackInfoReturnable<Boolean> cir){
         if (world.getBlockState(pos.down()).isIn(ModBlocks.SNOW_TAG)) {
-            Optional<SnowContentBlockEntity> snowierBlockEntity = world.getBlockEntity(pos.down(), ModBlocks.SNOW_ENTITY);
+            Optional<SnowContentBlockEntity> snowierBlockEntity = world.getBlockEntity(pos.down(), ModBlocks.SNOW_WITH_CONTENT_ENTITY);
             if (snowierBlockEntity.isPresent()) {
                 if (snowierBlockEntity.get().getContent().isOf(Blocks.SUGAR_CANE)){
                     cir.setReturnValue(true);

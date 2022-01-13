@@ -18,8 +18,6 @@ import net.minecraft.item.Items;
 import net.minecraft.item.ShovelItem;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.BlockSoundGroup;
-import net.minecraft.state.property.IntProperty;
-import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.ItemScatterer;
@@ -41,11 +39,13 @@ import java.util.Random;
 
 import static ss.snowiersnow.block.ModBlocks.SNOW_TAG;
 
-public interface SnowWithContent extends BlockEntityProvider {
-    IntProperty LAYERS = Properties.LAYERS;
-    VoxelShape[] LAYERS_TO_SHAPE = new VoxelShape[]{VoxelShapes.empty(), Block.createCuboidShape(0.0D, 0.0D, 0.0D, 16.0D, 2.0D, 16.0D), Block.createCuboidShape(0.0D, 0.0D, 0.0D, 16.0D, 4.0D, 16.0D), Block.createCuboidShape(0.0D, 0.0D, 0.0D, 16.0D, 6.0D, 16.0D), Block.createCuboidShape(0.0D, 0.0D, 0.0D, 16.0D, 8.0D, 16.0D), Block.createCuboidShape(0.0D, 0.0D, 0.0D, 16.0D, 10.0D, 16.0D), Block.createCuboidShape(0.0D, 0.0D, 0.0D, 16.0D, 12.0D, 16.0D), Block.createCuboidShape(0.0D, 0.0D, 0.0D, 16.0D, 14.0D, 16.0D), Block.createCuboidShape(0.0D, 0.0D, 0.0D, 16.0D, 16.0D, 16.0D)};
+@SuppressWarnings("deprecation")
+public class SnowWithContentBlock extends SnowBlock implements BlockEntityProvider  {
+    protected SnowWithContentBlock(Settings settings) {
+        super(settings);
+    }
 
-    default VoxelShape getCollisionShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+    public VoxelShape getCollisionShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
         VoxelShape shape = Blocks.SNOW.getCollisionShape(state, world,pos, context);
         if (world.getBlockState(pos.up()).getBlock().getDefaultState().isIn(SNOW_TAG) ) {
             int upperSnowLayers = world.getBlockState(pos.up()).get(LAYERS);
@@ -60,23 +60,23 @@ public interface SnowWithContent extends BlockEntityProvider {
         return VoxelShapes.combineAndSimplify(shape, VoxelShapes.fullCube(), BooleanBiFunction.AND);
     }
 
-    default VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
         int layers = state.get(LAYERS);
         return layers == 8 ? VoxelShapes.fullCube() : VoxelShapes.combineAndSimplify(LAYERS_TO_SHAPE[layers], SnowHelper.getContentState(world, pos).getOutlineShape(world, pos), BooleanBiFunction.OR);
     }
 
-    default VoxelShape getSidesShape(BlockState state, BlockView world, BlockPos pos) {
+    public VoxelShape getSidesShape(BlockState state, BlockView world, BlockPos pos) {
         int layers = state.get(LAYERS);
         return layers == 8 ? VoxelShapes.fullCube() : VoxelShapes.combineAndSimplify(LAYERS_TO_SHAPE[layers], SnowHelper.getContentState(world, pos).getOutlineShape(world, pos), BooleanBiFunction.OR);
     }
 
-    default boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos) {
+    public boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos) {
         BlockState surface = world.getBlockState(pos.down());
         if (!surface.isOf(Blocks.ICE) && !surface.isOf(Blocks.PACKED_ICE) && !surface.isOf(Blocks.BARRIER)) {
             if (!surface.isOf(Blocks.HONEY_BLOCK) && !surface.isOf(Blocks.SOUL_SAND)) {
                 return Block.isFaceFullSquare(surface.getCollisionShape(world, pos.down()), Direction.UP)
                     || surface.isIn(SNOW_TAG)
-                    && surface.get(SnowWithContent.LAYERS) == 8;
+                    && surface.get(LAYERS) == 8;
             } else {
                 return true;
             }
@@ -85,12 +85,12 @@ public interface SnowWithContent extends BlockEntityProvider {
         }
     }
 
-    default boolean canReplace(BlockState state, ItemPlacementContext context) {
+    public boolean canReplace(BlockState state, ItemPlacementContext context) {
         if (!SnowHelper.getContentState(context.getWorld(), context.getBlockPos()).isAir()){
             return false;
         }
         Block blockToReplaceWith = Block.getBlockFromItem(context.getStack().getItem());
-        int layers = state.get(SnowWithContent.LAYERS);
+        int layers = state.get(LAYERS);
         if (blockToReplaceWith.getDefaultState().isIn(SNOW_TAG) && layers < 8) {
             if (context.canReplaceExisting()) {
                 return context.getSide() == Direction.UP;
@@ -107,7 +107,7 @@ public interface SnowWithContent extends BlockEntityProvider {
         return layers == 1;
     }
 
-    default void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
+    public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
         if (newState.isAir()) {
             BlockState content = SnowHelper.getContentState(world, pos);
             if (!content.isAir()) {
@@ -132,7 +132,7 @@ public interface SnowWithContent extends BlockEntityProvider {
         }
     }
 
-    default BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos) {
+    public BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos) {
         BlockState content = SnowHelper.getContentState(world, pos);
         validatePlacement(content, world, pos);
         updateContent(content, direction, neighborState, world, pos, neighborPos);
@@ -140,7 +140,7 @@ public interface SnowWithContent extends BlockEntityProvider {
     }
 
 
-    default void randomTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
+    public void randomTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
         if (world.getLightLevel(LightType.BLOCK, pos) > 11) {
             SnowHelper.removeOrReduce(state, world, pos);
         }
@@ -152,7 +152,7 @@ public interface SnowWithContent extends BlockEntityProvider {
         }
     }
 
-    default void validatePlacement(BlockState content, WorldAccess world, BlockPos pos){
+    public void validatePlacement(BlockState content, WorldAccess world, BlockPos pos){
         if (!content.canPlaceAt(world, pos)) {
             SnowHelper.setContentState(Blocks.AIR.getDefaultState(), world, pos);
             if (world instanceof ServerWorld) {
@@ -161,12 +161,12 @@ public interface SnowWithContent extends BlockEntityProvider {
         }
     }
 
-    default void updateContent(BlockState content, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos){
+    public void updateContent(BlockState content, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos){
         BlockState updatedContent = content.getStateForNeighborUpdate(direction, neighborState, world, pos, neighborPos);
         SnowHelper.setContentState(updatedContent, world, pos);
     }
 
-    default float calcBlockBreakingDelta(BlockState state, PlayerEntity player, BlockView world, BlockPos pos) {
+    public float calcBlockBreakingDelta(BlockState state, PlayerEntity player, BlockView world, BlockPos pos) {
         float lowerHardness = state.getHardness(world, pos);
         BlockState easierToMineState = state;
         BlockState content = SnowHelper.getContentState(world, pos);
@@ -185,7 +185,7 @@ public interface SnowWithContent extends BlockEntityProvider {
         }
     }
 
-    default ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
         ActionResult result;
         ItemStack stackInHand = player.getStackInHand(hand);
         if (stackInHand.getItem() instanceof ShovelItem) {
@@ -220,7 +220,7 @@ public interface SnowWithContent extends BlockEntityProvider {
                 }
             }
         }
-        if (state.get(SnowWithContent.LAYERS) < 4) {
+        if (state.get(LAYERS) < 4) {
             if ((result = SnowHelper.getContentState(world, pos).onUse(world, player, hand, hit)) != ActionResult.PASS) {
                 return result;
             }
@@ -228,7 +228,7 @@ public interface SnowWithContent extends BlockEntityProvider {
         return ActionResult.PASS;
     }
 
-    default void damageShovel(ItemStack stackInHand, int unbreakingLevel) {
+    public void damageShovel(ItemStack stackInHand, int unbreakingLevel) {
         if (unbreakingLevel > 0) {
             if (new Random().nextInt(1 + unbreakingLevel) > 0) {
                 stackInHand.setDamage(stackInHand.getDamage() + 1);
@@ -238,15 +238,15 @@ public interface SnowWithContent extends BlockEntityProvider {
         }
     }
 
-    default void dropSnow(PlayerEntity player, boolean hasSilkTouch) {
-        ItemStack snow = hasSilkTouch ? new ItemStack(ModBlocks.DEFAULT_SNOW) : new ItemStack(Items.SNOWBALL);
+    public void dropSnow(PlayerEntity player, boolean hasSilkTouch) {
+        ItemStack snow = hasSilkTouch ? new ItemStack(ModBlocks.SNOW_WITH_CONTENT) : new ItemStack(Items.SNOWBALL);
         if (!player.giveItemStack(snow)) {
             player.dropItem(snow, false);
         }
     }
 
-    default void onLandedUpon(World world, BlockState state, BlockPos pos, Entity entity, float fallDistance) {
-        int combinedLayers = state.get(SnowWithContent.LAYERS);
+    public void onLandedUpon(World world, BlockState state, BlockPos pos, Entity entity, float fallDistance) {
+        int combinedLayers = state.get(LAYERS);
         if (world.getBlockState(pos.down()).isIn(SNOW_TAG)) {
             combinedLayers += 8;
         }
@@ -259,14 +259,14 @@ public interface SnowWithContent extends BlockEntityProvider {
         entity.handleFallDamage(fallDistance, damageMultiplier, DamageSource.FALL);
     }
 
-    default void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity) {
+    public void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity) {
         BlockState content = SnowHelper.getContentState(world, pos);
         if (content.isOf(Blocks.SWEET_BERRY_BUSH)){
             onBerryBushEntityCollision(content, world, pos, entity);
         }
     }
 
-    default void onBerryBushEntityCollision(BlockState state, World world, BlockPos pos, Entity entity) {
+    public void onBerryBushEntityCollision(BlockState state, World world, BlockPos pos, Entity entity) {
         if (entity instanceof LivingEntity && entity.getType() != EntityType.FOX && entity.getType() != EntityType.BEE) {
             entity.slowMovement(state, new Vec3d(0.8, 0.7D, 0.8));
             if (!world.isClient && state.get(SweetBerryBushBlock.AGE) > 0 && (entity.lastRenderX != entity.getX() || entity.lastRenderZ != entity.getZ())) {
@@ -279,15 +279,15 @@ public interface SnowWithContent extends BlockEntityProvider {
         }
     }
 
-    default BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+    public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
         return new SnowContentBlockEntity(pos, state);
     }
 
-    default <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
         return BlockEntityProvider.super.getTicker(world, state, type);
     }
 
-    default <T extends BlockEntity> GameEventListener getGameEventListener(World world, T blockEntity) {
+    public <T extends BlockEntity> GameEventListener getGameEventListener(World world, T blockEntity) {
         return BlockEntityProvider.super.getGameEventListener(world, blockEntity);
     }
 }

@@ -85,13 +85,18 @@ DONE:
 - replace vanilla snow
 - check snow gen under trees
 - when placing vanilla snow place modded snow instead
+- remove "instance of SnowBlock" etc. prob with a tag:
+- added fence to containables, buggy(or rather showed already present bugs)
 
-LAST:
-- remove "instance of SnowBlock" etc. prob with a tag
+LAST
+- fixed fence placing in snow
+- fixed shoveling fence from snow
+- tested breaking fence in snow
 
 TODO:
+- check snow melt when content is fence or anything else
 - add snow fall thru tag ?
-- snow content drop / snow drop
+- fix snow content drop / snow drop
 - snow melt
 - config
     - max snow layers
@@ -103,19 +108,3 @@ TODO:
 - never ending refactoring
 - speed up freezetoplayer feature(unsure)
 - prob more...
-
-1.
-place fence normal
-place snow
-place fence into snoww
-
-2.
-place snow
-place fence in snow
-place fence
-
-3.
-remove fence in snow
-
-4.
-remove fence

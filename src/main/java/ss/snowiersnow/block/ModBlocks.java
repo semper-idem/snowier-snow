@@ -17,13 +17,13 @@ import ss.snowiersnow.utils.SnowHelper;
 
 public class ModBlocks {
     public static final Tag<Block> SNOW_TAG = TagFactory.BLOCK.create(new Identifier("snowier-snow", "snow"));
-    public final static Identifier DEFAULT_SNOW_ID = new Identifier(SnowierSnow.MODID, "snow");
-    public static DefaultSnowBlock DEFAULT_SNOW;
-    public static BlockEntityType<SnowContentBlockEntity> SNOW_ENTITY;
+    public final static Identifier SNOW_WITH_CONTENT_ID = new Identifier(SnowierSnow.MODID, "snow");
+    public static SnowWithContentBlock SNOW_WITH_CONTENT;
+    public static BlockEntityType<SnowContentBlockEntity> SNOW_WITH_CONTENT_ENTITY;
 
     static {
-        DEFAULT_SNOW = new DefaultSnowBlock(FabricBlockSettings.copy(Blocks.SNOW));
-        SNOW_ENTITY = FabricBlockEntityTypeBuilder.create(SnowContentBlockEntity::new, DEFAULT_SNOW).build(null);
+        SNOW_WITH_CONTENT = new SnowWithContentBlock(FabricBlockSettings.copy(Blocks.SNOW));
+        SNOW_WITH_CONTENT_ENTITY = FabricBlockEntityTypeBuilder.create(SnowContentBlockEntity::new, SNOW_WITH_CONTENT).build(null);
     }
 
     public static void register() {
@@ -46,8 +46,8 @@ public class ModBlocks {
             }
         });
 
-        Registry.register(Registry.BLOCK, DEFAULT_SNOW_ID, DEFAULT_SNOW);
-        Registry.register(Registry.BLOCK_ENTITY_TYPE, DEFAULT_SNOW_ID, SNOW_ENTITY);
-        Registry.register(Registry.ITEM, DEFAULT_SNOW_ID, new BlockItem(DEFAULT_SNOW, new FabricItemSettings().group(ItemGroup.DECORATIONS)));
+        Registry.register(Registry.BLOCK, SNOW_WITH_CONTENT_ID, SNOW_WITH_CONTENT);
+        Registry.register(Registry.BLOCK_ENTITY_TYPE, SNOW_WITH_CONTENT_ID, SNOW_WITH_CONTENT_ENTITY);
+        Registry.register(Registry.ITEM, SNOW_WITH_CONTENT_ID, new BlockItem(SNOW_WITH_CONTENT, new FabricItemSettings().group(ItemGroup.DECORATIONS)));
     }
 }

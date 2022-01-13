@@ -37,6 +37,6 @@ public class BiomeHelper {
     }
 
     private static boolean canPlaceAt(WorldView world, BlockPos pos) {
-        return ModBlocks.DEFAULT_SNOW.getDefaultState().canPlaceAt(world, pos);
+        return ModBlocks.SNOW_WITH_CONTENT.getDefaultState().canPlaceAt(world, pos);
     }
 }
