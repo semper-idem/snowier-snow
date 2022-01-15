@@ -7,7 +7,6 @@ import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.tag.BlockTags;
-import net.minecraft.tag.Tag;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.BlockView;
@@ -16,11 +15,13 @@ import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldEvents;
 import ss.snowiersnow.block.ModBlocks;
 import ss.snowiersnow.blockentity.SnowContentBlockEntity;
+
 import java.util.ArrayList;
 
 public class SnowHelper {
     private static final ArrayList<Block> POSSIBLE_CONTENT = new ArrayList<>();
-    private static final ArrayList<Class <?>> BLOCKS_WITH_BASE = new ArrayList<>();
+    private static final ArrayList<Block> BLOCKS_WITH_BASE = new ArrayList<>();
+    private static final ArrayList<Block> ALLOW_RANDOM_TICK = new ArrayList<>();
     private static final BlockState DEFAULT_SNOW_STATE = ModBlocks.SNOW_WITH_CONTENT.getDefaultState();
 
 
@@ -48,8 +49,7 @@ public class SnowHelper {
     }
 
     public static boolean isContentBase(BlockState content) {
-        Block contentBlock = content.getBlock();
-        return BLOCKS_WITH_BASE.stream().noneMatch(clazz -> clazz.isInstance(contentBlock));
+        return BLOCKS_WITH_BASE.contains(content.getBlock());
     }
 
     public static boolean isContentFence(WorldAccess worldAccess, BlockPos pos) {
@@ -141,6 +141,7 @@ public class SnowHelper {
         if (layers == 1) {
             world.getChunk(pos).removeBlockEntity(pos);
             if (!content.isAir()) {
+                world.setBlockState(pos, Blocks.AIR.getDefaultState(), Block.NOTIFY_ALL); //spaghetti for onStateReplaced method
                 world.setBlockState(pos, content, Block.NOTIFY_ALL);
                 if (content.getBlock() instanceof TallPlantBlock) {
                     world.setBlockState(pos.up(), content.with(TallPlantBlock.HALF, DoubleBlockHalf.UPPER), Block.NOTIFY_ALL);
@@ -187,8 +188,16 @@ public class SnowHelper {
         POSSIBLE_CONTENT.add(block);
     }
 
-    public static void addSnowloggableBlockTag(Tag.Identified<Block> blockTag) {
-        blockTag.values().forEach(SnowHelper::addSnowloggableBlock);
+    public static void addBlocksWithBase(Block block) {
+        BLOCKS_WITH_BASE.add(block);
+    }
+
+    public static void addAllowRandomTick(Block block) {
+        ALLOW_RANDOM_TICK.add(block);
+    }
+
+    public static boolean isRandomTickAllowed(Block block) {
+        return ALLOW_RANDOM_TICK.contains(block);
     }
 
     public static boolean contentShouldBreak(int layers, BlockState content) {
@@ -199,9 +208,4 @@ public class SnowHelper {
         return layers == 8 ? contentHardness < 0.2F : contentHardness < 0.1F;
     }
 
-    static {
-        BLOCKS_WITH_BASE.add(SugarCaneBlock.class);
-        BLOCKS_WITH_BASE.add(BambooBlock.class);
-        BLOCKS_WITH_BASE.add(TallPlantBlock.class);
-    }
 }

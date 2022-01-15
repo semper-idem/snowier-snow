@@ -38,13 +38,24 @@ public class ModBlocks {
 
         Registry.BLOCK.forEach( block -> {
             if (block instanceof FlowerBlock ||
-                block instanceof SaplingBlock ||
-                block instanceof TallFlowerBlock ||
-                 block instanceof FenceBlock)
-            {
+                 block instanceof FenceBlock) {
                 SnowHelper.addSnowloggableBlock(block);
             }
+
+            if (block instanceof TallPlantBlock) {
+                SnowHelper.addSnowloggableBlock(block);
+                SnowHelper.addBlocksWithBase(block);
+            }
+
+            if (block instanceof SaplingBlock) {
+                SnowHelper.addSnowloggableBlock(block);
+                SnowHelper.addAllowRandomTick(block);
+            }
         });
+
+        SnowHelper.addBlocksWithBase(Blocks.SUGAR_CANE);
+        SnowHelper.addBlocksWithBase(Blocks.BAMBOO);
+        SnowHelper.addAllowRandomTick(Blocks.SWEET_BERRY_BUSH);
 
         Registry.register(Registry.BLOCK, SNOW_WITH_CONTENT_ID, SNOW_WITH_CONTENT);
         Registry.register(Registry.BLOCK_ENTITY_TYPE, SNOW_WITH_CONTENT_ID, SNOW_WITH_CONTENT_ENTITY);

@@ -87,13 +87,15 @@ DONE:
 - when placing vanilla snow place modded snow instead
 - remove "instance of SnowBlock" etc. prob with a tag:
 - added fence to containables, buggy(or rather showed already present bugs)
-
-LAST
 - fixed fence placing in snow
 - fixed shoveling fence from snow
 - tested breaking fence in snow
 
+LAST
+- fixed shoveling snow etc.
 TODO:
+- fix snow/content should be replaced
+- make snowloggable tag
 - check snow melt when content is fence or anything else
 - add snow fall thru tag ?
 - fix snow content drop / snow drop

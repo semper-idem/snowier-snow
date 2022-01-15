@@ -49,5 +49,4 @@ public class SugarCaneBlockMixin extends Block {
             }
         }
     }
-
 }

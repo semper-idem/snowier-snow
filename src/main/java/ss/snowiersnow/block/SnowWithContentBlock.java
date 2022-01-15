@@ -107,29 +107,28 @@ public class SnowWithContentBlock extends SnowBlock implements BlockEntityProvid
         return layers == 1;
     }
 
-    public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
-        if (newState.isAir()) {
-            BlockState content = SnowHelper.getContentState(world, pos);
-            if (!content.isAir()) {
-                if (state.isIn(SNOW_TAG)) {
-                    boolean contentShouldBreak = SnowHelper.contentShouldBreak(state.get(LAYERS), content);
-                    if (contentShouldBreak) {
-                        if (SnowHelper.isContentBase(content)) {
-                            world.setBlockState(pos.up(), Blocks.AIR.getDefaultState());
-                        }
-                        world.setBlockState(pos, state);
-                        SnowHelper.setContentState(Blocks.AIR.getDefaultState(), world, pos);
-                        ItemScatterer.spawn(world, pos.getX(), pos.getY(), pos.getZ(), new ItemStack(content.getBlock()));
-                    } else {
-                        world.setBlockState(pos, content);
-                        world.removeBlockEntity(pos);
-                    }
+    public void onBroken(WorldAccess world, BlockPos pos, BlockState state) {
+        BlockState content = SnowHelper.getContentState(world, pos);
+        if (!content.isAir()) {
+            if (SnowHelper.contentShouldBreak(state.get(LAYERS), content)) {
+                if (SnowHelper.isContentBase(content)) {
+                    world.removeBlock(pos, false);
                 }
-            } else if (SnowHelper.canContain(newState)) {
-                world.setBlockState(pos, state);
-                SnowHelper.setContentState(newState, world, pos);
+                SnowHelper.setContentState(Blocks.AIR.getDefaultState(), world, pos);
+                world.setBlockState(pos, state, Block.NOTIFY_NEIGHBORS);
+                ItemScatterer.spawn((World)world, pos.getX(), pos.getY(), pos.getZ(), new ItemStack(content.getBlock()));
+            } else {
+                world.setBlockState(pos, content, Block.NOTIFY_NEIGHBORS);
             }
         }
+    }
+
+    public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
+        if (SnowHelper.canContain(newState) && newState.hasRandomTicks()) {
+            world.setBlockState(pos, state);
+            SnowHelper.setContentState(newState, world, pos);
+        }
+        //bug when somehow state isnt snow// udpate is too fast block gets replaced entity, does not
     }
 
     public BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos) {
@@ -147,7 +146,7 @@ public class SnowWithContentBlock extends SnowBlock implements BlockEntityProvid
         BlockState content = SnowHelper.getContentState(world, pos);
         validatePlacement(content, world, pos);
 
-        if (content.hasRandomTicks()) {
+        if (content.hasRandomTicks() && SnowHelper.isRandomTickAllowed(content.getBlock())) {
             content.randomTick(world, pos, random);
         }
     }
