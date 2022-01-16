@@ -1,10 +1,7 @@
 package ss.snowiersnow.mixin.block;
 
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.FenceBlock;
-import net.minecraft.block.HorizontalConnectingBlock;
+import net.minecraft.block.*;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
@@ -50,6 +47,14 @@ public class FenceBlockMixin extends HorizontalConnectingBlock {
             }
         }
     }
+//
+//    public boolean canConnect(BlockState state, boolean neighborIsFullSquare, Direction dir) {
+//        Block block = state.getBlock();
+//        boolean bl = this.canConnectToFence(state);
+//        boolean bl2 = block instanceof FenceGateBlock && FenceGateBlock.canWallConnect(state, dir);
+//        return !cannotConnect(state) && neighborIsFullSquare || bl || bl2;
+//    }
+
 
     /**
      * @author

@@ -2,13 +2,18 @@ package ss.snowiersnow.utils;
 
 import net.minecraft.block.*;
 import net.minecraft.block.enums.DoubleBlockHalf;
+import net.minecraft.block.enums.WallShape;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
+import net.minecraft.state.property.Properties;
 import net.minecraft.tag.BlockTags;
+import net.minecraft.util.function.BooleanBiFunction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
@@ -23,6 +28,7 @@ public class SnowHelper {
     private static final ArrayList<Block> BLOCKS_WITH_BASE = new ArrayList<>();
     private static final ArrayList<Block> ALLOW_RANDOM_TICK = new ArrayList<>();
     private static final BlockState DEFAULT_SNOW_STATE = ModBlocks.SNOW_WITH_CONTENT.getDefaultState();
+    private static final VoxelShape TALL_POST_SHAPE = Block.createCuboidShape(7.0D, 0.0D, 7.0D, 9.0D, 16.0D, 9.0D);
 
 
     public static boolean canContain(BlockState state) {
@@ -36,15 +42,13 @@ public class SnowHelper {
     public static SnowContentBlockEntity getBlockEntity(BlockView blockView, BlockPos blockPos) {
         return blockView.getBlockEntity(blockPos, ModBlocks.SNOW_WITH_CONTENT_ENTITY).orElse(null);
     }
+
     public static BlockState getContentState(BlockView blockView, BlockPos blockPos){
         SnowContentBlockEntity sbe = blockView.getBlockEntity(blockPos, ModBlocks.SNOW_WITH_CONTENT_ENTITY).orElse(null);
         return sbe != null ? sbe.getContent() : Blocks.AIR.getDefaultState();
     }
-    public static void setContentState(BlockState content, WorldAccess world, BlockPos pos) {
-        getBlockEntity(world, pos).setContent(content);
-    }
 
-    public static void setContentState(BlockState content, ServerWorld world, BlockPos pos) {
+    public static void setContent(BlockState content, WorldAccess world, BlockPos pos) {
         getBlockEntity(world, pos).setContent(content);
     }
 
@@ -79,37 +83,40 @@ public class SnowHelper {
             world.setBlockState(pos.up(), futureContent.with(TallPlantBlock.HALF, DoubleBlockHalf.UPPER), Block.NOTIFY_LISTENERS, 512);
         }
         futureContent.updateNeighbors(world, pos, Block.NOTIFY_NEIGHBORS);
-        setContentState(futureContent, world, pos);
+        setContent(futureContent, world, pos);
     }
 
     public static void setSnow(BlockState futureContent, ServerWorld world, BlockPos pos) {
         world.setBlockState(pos, DEFAULT_SNOW_STATE);
-        if (futureContent.getBlock() instanceof TallPlantBlock && futureContent.get(TallPlantBlock.HALF) == DoubleBlockHalf.LOWER) {
+        Block futureContentBlock = futureContent.getBlock();
+        if (futureContentBlock instanceof TallPlantBlock && futureContent.get(TallPlantBlock.HALF) == DoubleBlockHalf.LOWER) {
             world.setBlockState(pos.up(), futureContent.with(TallPlantBlock.HALF, DoubleBlockHalf.UPPER));
+        } else if (
+            futureContentBlock instanceof FenceBlock ||
+                futureContentBlock instanceof FenceGateBlock ||
+                futureContentBlock instanceof WallBlock
+        ) {
+            futureContent = getBlockConnectedState(futureContent, world, pos);
+            futureContent.updateNeighbors(world, pos, Block.NOTIFY_NEIGHBORS);
         }
-        setContentState(futureContent, world, pos);
+        setContent(futureContent, world, pos);
     }
 
     public static void putInSnow(BlockState futureContent, WorldAccess world, BlockPos pos, int layers) {
-        if (canContain(futureContent)) {
+        Block futureContentBlock = futureContent.getBlock();
+        if (canContain(futureContentBlock)) {
             world.setBlockState(pos, DEFAULT_SNOW_STATE.with(SnowBlock.LAYERS, layers), Block.NOTIFY_LISTENERS, 512);
-            if (futureContent.getBlock() instanceof TallPlantBlock && futureContent.get(TallPlantBlock.HALF) == DoubleBlockHalf.LOWER) {
+            if (futureContentBlock instanceof TallPlantBlock && futureContent.get(TallPlantBlock.HALF) == DoubleBlockHalf.LOWER) {
                 world.setBlockState(pos.up(), futureContent.with(TallPlantBlock.HALF, DoubleBlockHalf.UPPER), Block.NOTIFY_LISTENERS, 512);
-            } else if (futureContent.isIn(BlockTags.FENCES)) {
-                futureContent = fencePlacementState(futureContent, world, pos);
+            } else if (
+                    futureContentBlock instanceof FenceBlock ||
+                    futureContentBlock instanceof FenceGateBlock ||
+                    futureContentBlock instanceof WallBlock
+            ) {
+                futureContent = getBlockConnectedState(futureContent, world, pos);
                 futureContent.updateNeighbors(world, pos, Block.NOTIFY_NEIGHBORS);
             }
-            setContentState(futureContent, world, pos);
-        }
-    }
-
-    public static void putInSnow(BlockState futureContent, ServerWorld world, BlockPos pos, int layers) {
-        if (canContain(futureContent)) {
-            world.setBlockState(pos, DEFAULT_SNOW_STATE.with(SnowBlock.LAYERS, layers));
-            if (futureContent.getBlock() instanceof TallPlantBlock && futureContent.get(TallPlantBlock.HALF) == DoubleBlockHalf.LOWER) {
-                world.setBlockState(pos.up(), futureContent.with(TallPlantBlock.HALF, DoubleBlockHalf.UPPER));
-            }
-            setContentState(futureContent, world, pos);
+            setContent(futureContent, world, pos);
         }
     }
 
@@ -159,22 +166,64 @@ public class SnowHelper {
         world.syncWorldEvent(WorldEvents.BLOCK_BROKEN, pos, Block.getRawIdFromState(Blocks.SNOW.getDefaultState()));
     }
 
-    private static BlockState fencePlacementState(BlockState fence, WorldAccess world, BlockPos pos){
-        boolean connectedNorth = connectedTo(world, pos.north(), Direction.SOUTH);
-        boolean connectedSouth = connectedTo(world, pos.south(), Direction.NORTH);
-        boolean connectedEast = connectedTo(world, pos.east(), Direction.WEST);
-        boolean connectedWest = connectedTo(world, pos.west(), Direction.EAST);
-        return fence
-            .with(HorizontalConnectingBlock.NORTH, connectedNorth)
-            .with(HorizontalConnectingBlock.SOUTH, connectedSouth)
-            .with(HorizontalConnectingBlock.EAST, connectedEast)
-            .with(HorizontalConnectingBlock.WEST, connectedWest);
+    private static BlockState getBlockConnectedState(BlockState connectingBlock, WorldAccess world, BlockPos pos){
+        Block block = connectingBlock.getBlock();
+        if (block instanceof FenceBlock) {
+            return getFenceBlockState(connectingBlock, world, pos, block);
+        } else {
+            return getWallBlockState(connectingBlock, world, pos, block);
+        }
     }
 
-    private static boolean connectedTo(WorldAccess world, BlockPos pos, Direction from) {
+    private static BlockState getWallBlockState(BlockState blockState, WorldAccess world, BlockPos pos, Block block) {
+        boolean connectedNorth = connectedTo(world, pos.north(), Direction.SOUTH, block);
+        boolean connectedSouth = connectedTo(world, pos.south(), Direction.NORTH, block);
+        boolean connectedEast = connectedTo(world, pos.east(), Direction.WEST, block);
+        boolean connectedWest = connectedTo(world, pos.west(), Direction.EAST, block);
+        BlockState aboveState = world.getBlockState(pos.up());
+        BlockState blockState2 = blockState
+            .with(WallBlock.NORTH_SHAPE, connectedNorth ? WallShape.LOW : WallShape.NONE)
+            .with(WallBlock.SOUTH_SHAPE, connectedSouth ? WallShape.LOW : WallShape.NONE)
+            .with(WallBlock.EAST_SHAPE, connectedEast ? WallShape.LOW : WallShape.NONE)
+            .with(WallBlock.WEST_SHAPE, connectedWest ? WallShape.LOW : WallShape.NONE);
+        return blockState2
+            .with(Properties.UP, shouldHavePost(connectedSouth, connectedWest, connectedEast, connectedNorth, aboveState, aboveState.getCollisionShape(world, pos.up()).getFace(Direction.DOWN)));
+    }
+
+    private static boolean shouldHavePost(boolean south, boolean west, boolean east, boolean north, BlockState aboveState, VoxelShape aboveShape) {
+        boolean bl = aboveState.getBlock() instanceof WallBlock && (Boolean)aboveState.get(Properties.UP);
+        if (bl) {
+            return true;
+        } else {
+            boolean bl6 = south && north && west && east || south != north || west != east;
+            if (bl6) {
+                return true;
+            } else {
+                return aboveState.isIn(BlockTags.WALL_POST_OVERRIDE) || shouldUseTallShape(aboveShape);
+            }
+        }
+    }
+
+    private static boolean shouldUseTallShape(VoxelShape aboveShape) {
+        return !VoxelShapes.matchesAnywhere(SnowHelper.TALL_POST_SHAPE, aboveShape, BooleanBiFunction.ONLY_FIRST);
+    }
+
+    private static BlockState getFenceBlockState(BlockState connectingBlock, WorldAccess world, BlockPos pos, Block block){
+        boolean connectedNorth = connectedTo(world, pos.north(), Direction.SOUTH, block);
+        boolean connectedSouth = connectedTo(world, pos.south(), Direction.NORTH, block);
+        boolean connectedEast = connectedTo(world, pos.east(), Direction.WEST, block);
+        boolean connectedWest = connectedTo(world, pos.west(), Direction.EAST, block);
+        return connectingBlock
+            .with(Properties.NORTH, connectedNorth)
+            .with(Properties.SOUTH, connectedSouth)
+            .with(Properties.EAST, connectedEast)
+            .with(Properties.WEST, connectedWest);
+    }
+
+    private static boolean connectedTo(WorldAccess world, BlockPos pos, Direction from, Block block) {
         BlockState state = world.getBlockState(pos);
         boolean isSolid = state.isSideSolidFullSquare(world, pos, from);
-        boolean isFence =  state.isIn(BlockTags.FENCES) || getContentState(world, pos).isIn(BlockTags.FENCES);
+        boolean isFence =  state.isOf(block) || getContentState(world, pos).isOf(block);
         return isFence || isSolid;
     }
 

@@ -38,7 +38,9 @@ public class ModBlocks {
 
         Registry.BLOCK.forEach( block -> {
             if (block instanceof FlowerBlock ||
-                 block instanceof FenceBlock) {
+                block instanceof FenceBlock ||
+                block instanceof FenceGateBlock ||
+                block instanceof WallBlock ) {
                 SnowHelper.addSnowloggableBlock(block);
             }
 

@@ -19,8 +19,8 @@ public class SnowContentBlockEntity extends BlockEntity implements Clearable {
         super(ModBlocks.SNOW_WITH_CONTENT_ENTITY, pos, state);
     }
 
-    public void setContent(BlockState state) {
-        this.content = state;
+    public void setContent(BlockState newContent) {
+        this.content = newContent;
         this.updateListeners();
     }
 
@@ -67,7 +67,7 @@ public class SnowContentBlockEntity extends BlockEntity implements Clearable {
     private void updateListeners() {
         this.markDirty();
         World world = this.getWorld();
-        if (world != null){
+        if (world != null) {
             world.updateListeners(this.getPos(), this.getCachedState(), this.getCachedState(), Block.NOTIFY_ALL);
         }
     }

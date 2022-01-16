@@ -1,50 +1,15 @@
-Testing notes:
-1. World
-    - outline shape
-        - with content
-        - without content
-    - colision shape
-        - 1 layers
-        - 2 layers
-        - 5 layers
-        - 8 layers
-        - with content
-        - without content
-        - walk
-        - jump
-        - fall
-
-2. Snowing (weather rain)
-    - snow falls on ground
-    - snow falls on snowloggable
-    - snow accumulate on itself
-    - snow accumulate on snowloggable
-3. Right click
-    - right click ground
-    - right click snowloggable
-    - right click snowierblock with content
-    - right click snowierblock without content * check for collision
-
-
-Scenarios to check
-Non-growing plant blocks(Poppy, grass)
-- route A(dynamic) - only lets stay if block below is dirt)
-- route B(static) - is "frozen" in snow does not care about dirt
-
-
 TODO:
  - refactor getting of content/check if empty etc.
  - general refactor afterwards
 
 
 FEATURES:
- - make all desired blocks work as static
  - add "frozen" textures
  - make snow particles bringers maybe even C00lER 8)?
 
 
 
-//ALL FUTURE SNOWLOGGABLE BLOCKS
+//ALL POSSIBLE SNOWLOGGABLE BLOCKS
 -Anvil
 -Grindstone
 -Buttons
@@ -65,19 +30,18 @@ FEATURES:
 -Bamboo
 -Berry Bush
 
-TODO-FIRST-ITERATION
+BLOCKS TODO:
+-Pane
+
+BLOCKS DONE:
 -Static plants
 -Double static plants
 -Berry Bush
 -Bambooo
 -Sugar Cane
 -Saplings
-
-TODO-SECOND-ITERATION
 -Fence
 -Wall
--Pane
-
 
 DONE:
 - snowfall stacking fixed
@@ -90,14 +54,17 @@ DONE:
 - fixed fence placing in snow
 - fixed shoveling fence from snow
 - tested breaking fence in snow
+- fixed shoveling snow etc.
 
 LAST
-- fixed shoveling snow etc.
-TODO:
+- added stone wall
 - fix snow/content should be replaced
-- make snowloggable tag
 - check snow melt when content is fence or anything else
 - add snow fall thru tag ?
+
+TODO:
+- only use modded snow when content inside otherwise replace with vanilla snow -> snow conversion
+- make snowloggable tag
 - fix snow content drop / snow drop
 - snow melt
 - config

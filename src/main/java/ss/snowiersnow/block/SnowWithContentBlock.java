@@ -114,19 +114,20 @@ public class SnowWithContentBlock extends SnowBlock implements BlockEntityProvid
                 if (SnowHelper.isContentBase(content)) {
                     world.removeBlock(pos, false);
                 }
-                SnowHelper.setContentState(Blocks.AIR.getDefaultState(), world, pos);
+                SnowHelper.setContent(Blocks.AIR.getDefaultState(), world, pos);
                 world.setBlockState(pos, state, Block.NOTIFY_NEIGHBORS);
                 ItemScatterer.spawn((World)world, pos.getX(), pos.getY(), pos.getZ(), new ItemStack(content.getBlock()));
             } else {
+                ((ServerWorld)world).removeBlockEntity(pos);
                 world.setBlockState(pos, content, Block.NOTIFY_NEIGHBORS);
             }
         }
     }
 
     public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
-        if (SnowHelper.canContain(newState) && newState.hasRandomTicks()) {
+        if (SnowHelper.canContain(newState) && !moved) {
             world.setBlockState(pos, state);
-            SnowHelper.setContentState(newState, world, pos);
+            SnowHelper.setContent(newState, world, pos);
         }
         //bug when somehow state isnt snow// udpate is too fast block gets replaced entity, does not
     }
@@ -142,27 +143,31 @@ public class SnowWithContentBlock extends SnowBlock implements BlockEntityProvid
     public void randomTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
         if (world.getLightLevel(LightType.BLOCK, pos) > 11) {
             SnowHelper.removeOrReduce(state, world, pos);
-        }
-        BlockState content = SnowHelper.getContentState(world, pos);
-        validatePlacement(content, world, pos);
+        } else {
+            BlockState content = SnowHelper.getContentState(world, pos);
+            if (validatePlacement(content, world, pos)) {
+                if (content.hasRandomTicks() && SnowHelper.isRandomTickAllowed(content.getBlock())) {
+                    content.randomTick(world, pos, random);
+                }
+            }
 
-        if (content.hasRandomTicks() && SnowHelper.isRandomTickAllowed(content.getBlock())) {
-            content.randomTick(world, pos, random);
         }
     }
 
-    public void validatePlacement(BlockState content, WorldAccess world, BlockPos pos){
+    public boolean validatePlacement(BlockState content, WorldAccess world, BlockPos pos){
         if (!content.canPlaceAt(world, pos)) {
-            SnowHelper.setContentState(Blocks.AIR.getDefaultState(), world, pos);
+            SnowHelper.setContent(Blocks.AIR.getDefaultState(), world, pos);
             if (world instanceof ServerWorld) {
                 ItemScatterer.spawn((World) world, pos.getX(), pos.getY(), pos.getZ(), new ItemStack(content.getBlock()));
             }
+            return false;
         }
+        return true;
     }
 
     public void updateContent(BlockState content, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos){
         BlockState updatedContent = content.getStateForNeighborUpdate(direction, neighborState, world, pos, neighborPos);
-        SnowHelper.setContentState(updatedContent, world, pos);
+        SnowHelper.setContent(updatedContent, world, pos);
     }
 
     public float calcBlockBreakingDelta(BlockState state, PlayerEntity player, BlockView world, BlockPos pos) {

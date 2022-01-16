@@ -1,8 +1,11 @@
 package ss.snowiersnow.mixin;
 
-import net.minecraft.block.*;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.SnowBlock;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.Heightmap;
@@ -69,7 +72,7 @@ public abstract class ServerWorldMixin extends World {
                 randomTopBlock = randomTopBlock.down();
                 BlockState topBlockState = chunk.getBlockState(randomTopBlock);
                 Block topBlock = topBlockState.getBlock();
-                if(topBlock instanceof StairsBlock || topBlock instanceof SlabBlock || topBlockState.isSolidBlock(chunk, randomTopBlock)) {
+                if(SnowHelper.canContain(topBlock) || topBlockState.isSideSolidFullSquare(chunk, randomTopBlock, Direction.UP)) {
                     break;
                 }
             }

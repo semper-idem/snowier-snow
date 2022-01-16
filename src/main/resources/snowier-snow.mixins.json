@@ -15,7 +15,8 @@
     "block.SnowyBlockMixin",
     "block.SpreadableBlockMixin",
     "block.SugarCaneBlockMixin",
-    "block.TallPlantBlockMixin"
+    "block.TallPlantBlockMixin",
+    "block.WallBlockMixin"
   ],
   "client": [
   ],

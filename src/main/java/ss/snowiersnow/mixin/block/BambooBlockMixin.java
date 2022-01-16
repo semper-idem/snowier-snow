@@ -79,12 +79,12 @@ public class BambooBlockMixin extends Block{
 
     @Inject(at = @At("HEAD"), method = "getStateForNeighborUpdate")
     public void onGetStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos, CallbackInfoReturnable<BlockState> cir) {
-        BlockState neighborContent = SnowHelper.getContentState(world, neighborPos);
-        if (neighborContent.isOf(Blocks.BAMBOO)) {
-            if (direction == Direction.UP && neighborContent.get(AGE) > state.get(AGE)) {
-                world.setBlockState(pos, state.cycle(AGE), Block.NOTIFY_LISTENERS);
-            }
-        }
+//        BlockState neighborContent = SnowHelper.getContentState(world, neighborPos);
+//        if (neighborContent.isOf(Blocks.BAMBOO)) {
+//            if (direction == Direction.UP && neighborContent.get(AGE) > state.get(AGE)) {
+//                world.setBlockState(pos, state.cycle(AGE), Block.NOTIFY_LISTENERS);
+//            }
+//        }
     }
 
 
@@ -106,7 +106,7 @@ public class BambooBlockMixin extends Block{
     @Overwrite
     public int countBambooBelow(BlockView world, BlockPos pos) {
         int i;
-        for(i = 0; i < 16 && (world.getBlockState(pos.up(i + 1)).isOf(Blocks.BAMBOO) || SnowHelper.getContentState(world, pos).isOf(Blocks.BAMBOO)); ++i) {
+        for(i = 0; i < 16 && (world.getBlockState(pos.down(i + 1)).isOf(Blocks.BAMBOO) || SnowHelper.getContentState(world, pos).isOf(Blocks.BAMBOO)); ++i) {
         }
 
         return i;
