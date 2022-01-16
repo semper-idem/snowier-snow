@@ -118,4 +118,7 @@ run/
 !gradle-wrapper.jar
 
 #Notes
-snowier_snow_notes
+notes/snowier_snow_notes
+/bin/
+/.vscode/
+/notes/

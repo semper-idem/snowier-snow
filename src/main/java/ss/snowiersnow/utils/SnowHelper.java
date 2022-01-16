@@ -199,7 +199,11 @@ public class SnowHelper {
             if (bl6) {
                 return true;
             } else {
-                return aboveState.isIn(BlockTags.WALL_POST_OVERRIDE) || shouldUseTallShape(aboveShape);
+				if (north && south || east && west) {
+					return false;
+				} else {
+					return aboveState.isIn(BlockTags.WALL_POST_OVERRIDE) || shouldUseTallShape(aboveShape);
+				}
             }
         }
     }
