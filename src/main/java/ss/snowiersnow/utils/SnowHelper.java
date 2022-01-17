@@ -3,7 +3,6 @@ package ss.snowiersnow.utils;
 import net.minecraft.block.*;
 import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.block.enums.WallShape;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
@@ -14,157 +13,63 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
-import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldEvents;
-import ss.snowiersnow.block.ModBlocks;
-import ss.snowiersnow.blockentity.SnowContentBlockEntity;
-
-import java.util.ArrayList;
+import ss.snowiersnow.blockentity.ContentBlockEntity;
+import ss.snowiersnow.registry.ModBlocks;
+import ss.snowiersnow.registry.ModTags;
 
 public class SnowHelper {
-    private static final ArrayList<Block> POSSIBLE_CONTENT = new ArrayList<>();
-    private static final ArrayList<Block> BLOCKS_WITH_BASE = new ArrayList<>();
-    private static final ArrayList<Block> ALLOW_RANDOM_TICK = new ArrayList<>();
-    private static final BlockState DEFAULT_SNOW_STATE = ModBlocks.SNOW_WITH_CONTENT.getDefaultState();
     private static final VoxelShape TALL_POST_SHAPE = Block.createCuboidShape(7.0D, 0.0D, 7.0D, 9.0D, 16.0D, 9.0D);
 
-
-    public static boolean canContain(BlockState state) {
-        return canContain(state.getBlock());
-    }
-
-    public static boolean canContain(Block block) {
-        return POSSIBLE_CONTENT.contains(block);
-    }
-
-    public static SnowContentBlockEntity getBlockEntity(BlockView blockView, BlockPos blockPos) {
-        return blockView.getBlockEntity(blockPos, ModBlocks.SNOW_WITH_CONTENT_ENTITY).orElse(null);
-    }
-
-    public static BlockState getContentState(BlockView blockView, BlockPos blockPos){
-        SnowContentBlockEntity sbe = blockView.getBlockEntity(blockPos, ModBlocks.SNOW_WITH_CONTENT_ENTITY).orElse(null);
-        return sbe != null ? sbe.getContent() : Blocks.AIR.getDefaultState();
-    }
-
-    public static void setContent(BlockState content, WorldAccess world, BlockPos pos) {
-        getBlockEntity(world, pos).setContent(content);
-    }
-
-    public static boolean isContentBase(BlockState content) {
-        return BLOCKS_WITH_BASE.contains(content.getBlock());
-    }
-
-    public static boolean isContentFence(WorldAccess worldAccess, BlockPos pos) {
-        return getContentState(worldAccess, pos).isIn(BlockTags.FENCES);
-    }
-
-    public static void setOrStackSnow(WorldAccess worldAccess, BlockPos pos) {
-        BlockState contentOrSnow = worldAccess.getBlockState(pos);
-        if (contentOrSnow.isIn(ModBlocks.SNOW_TAG)) {
-            stackSnow(contentOrSnow, worldAccess, pos);
-        } else if (canContain(contentOrSnow) || contentOrSnow.isAir()) {
-            setSnow(contentOrSnow, worldAccess, pos);
+    public static void addLayer(BlockState content, WorldAccess world, BlockPos pos) {
+        world.setBlockState(pos, ModBlocks.SNOW_WITH_CONTENT.getDefaultState(), Block.NOTIFY_LISTENERS, 512);
+        if (content.getBlock() instanceof TallPlantBlock && content.get(TallPlantBlock.HALF) == DoubleBlockHalf.LOWER) {
+            world.setBlockState(pos.up(), content.with(TallPlantBlock.HALF, DoubleBlockHalf.UPPER), Block.NOTIFY_LISTENERS, 512);
+        } else if (isConnectingBlock(content)) {
+            content = getBlockConnectedState(content, world, pos);
+            content.updateNeighbors(world, pos, Block.NOTIFY_NEIGHBORS);
         }
-    }
-    public static void setOrStackSnow(ServerWorld serverWorld, BlockPos pos) {
-        BlockState contentOrSnow = serverWorld.getBlockState(pos);
-        if (contentOrSnow.isIn(ModBlocks.SNOW_TAG)) {
-            stackSnow(contentOrSnow, serverWorld, pos);
-        } else if (canContain(contentOrSnow) || contentOrSnow.isAir())  {
-            setSnow(contentOrSnow, serverWorld, pos);
-        }
+        ContentBlockEntity.setContent(content, world, pos);
     }
 
-    public static void setSnow(BlockState futureContent, WorldAccess world, BlockPos pos) {
-        world.setBlockState(pos, DEFAULT_SNOW_STATE, Block.NOTIFY_LISTENERS, 512);
-        if (futureContent.getBlock() instanceof TallPlantBlock && futureContent.get(TallPlantBlock.HALF) == DoubleBlockHalf.LOWER) {
-            world.setBlockState(pos.up(), futureContent.with(TallPlantBlock.HALF, DoubleBlockHalf.UPPER), Block.NOTIFY_LISTENERS, 512);
-        }
-        futureContent.updateNeighbors(world, pos, Block.NOTIFY_NEIGHBORS);
-        setContent(futureContent, world, pos);
-    }
 
-    public static void setSnow(BlockState futureContent, ServerWorld world, BlockPos pos) {
-        world.setBlockState(pos, DEFAULT_SNOW_STATE);
-        Block futureContentBlock = futureContent.getBlock();
-        if (futureContentBlock instanceof TallPlantBlock && futureContent.get(TallPlantBlock.HALF) == DoubleBlockHalf.LOWER) {
-            world.setBlockState(pos.up(), futureContent.with(TallPlantBlock.HALF, DoubleBlockHalf.UPPER));
-        } else if (
-            futureContentBlock instanceof FenceBlock ||
-                futureContentBlock instanceof FenceGateBlock ||
-                futureContentBlock instanceof WallBlock
-        ) {
-            futureContent = getBlockConnectedState(futureContent, world, pos);
-            futureContent.updateNeighbors(world, pos, Block.NOTIFY_NEIGHBORS);
-        }
-        setContent(futureContent, world, pos);
-    }
-
-    public static void putInSnow(BlockState futureContent, WorldAccess world, BlockPos pos, int layers) {
-        Block futureContentBlock = futureContent.getBlock();
-        if (canContain(futureContentBlock)) {
-            world.setBlockState(pos, DEFAULT_SNOW_STATE.with(SnowBlock.LAYERS, layers), Block.NOTIFY_LISTENERS, 512);
-            if (futureContentBlock instanceof TallPlantBlock && futureContent.get(TallPlantBlock.HALF) == DoubleBlockHalf.LOWER) {
-                world.setBlockState(pos.up(), futureContent.with(TallPlantBlock.HALF, DoubleBlockHalf.UPPER), Block.NOTIFY_LISTENERS, 512);
-            } else if (
-                    futureContentBlock instanceof FenceBlock ||
-                    futureContentBlock instanceof FenceGateBlock ||
-                    futureContentBlock instanceof WallBlock
-            ) {
-                futureContent = getBlockConnectedState(futureContent, world, pos);
-                futureContent.updateNeighbors(world, pos, Block.NOTIFY_NEIGHBORS);
-            }
-            setContent(futureContent, world, pos);
-        }
-    }
-
-    public static void stackSnow(BlockState snowWithContent, WorldAccess worldAccess, BlockPos pos) {
-        int currentLayers = snowWithContent.get(SnowBlock.LAYERS);
-        if (currentLayers != 8) {
-            worldAccess.setBlockState(pos, snowWithContent.with(SnowBlock.LAYERS, currentLayers + 1), Block.NOTIFY_LISTENERS, 512);
-        }
-        BlockState content = getContentState(worldAccess, pos);
-        if (!content.isOf(Blocks.AIR)) {
-            content.updateNeighbors(worldAccess, pos, Block.NOTIFY_NEIGHBORS);
-        }
-    }
-
-    public static void stackSnow(BlockState snowWithContent, ServerWorld serverWorld, BlockPos pos) {
-        int currentLayers = snowWithContent.get(SnowBlock.LAYERS);
-        if (currentLayers != 8) {
-            serverWorld.setBlockState(pos, snowWithContent.with(SnowBlock.LAYERS, currentLayers + 1), Block.NOTIFY_LISTENERS, 512);
-        }
-        BlockState content = getContentState(serverWorld, pos);
-        if (!content.isAir()) {
-            content.updateNeighbors(serverWorld, pos, Block.NOTIFY_NEIGHBORS);
-        }
-    }
-
-    public static void removeOrReduce(BlockState snowState, World world, BlockPos pos) {
-        BlockState content = getContentState(world, pos);
-            int layers = snowState.get(SnowBlock.LAYERS);
+    public static void meltLayer(BlockState snowState, World world, BlockPos pos) {
+        BlockState content = ContentBlockEntity.getContent(world, pos);
+        int layers = snowState.get(SnowBlock.LAYERS);
         if (layers == 1) {
             world.getChunk(pos).removeBlockEntity(pos);
-            if (!content.isAir()) {
-                world.setBlockState(pos, Blocks.AIR.getDefaultState(), Block.NOTIFY_ALL); //spaghetti for onStateReplaced method
-                world.setBlockState(pos, content, Block.NOTIFY_ALL);
-                if (content.getBlock() instanceof TallPlantBlock) {
-                    world.setBlockState(pos.up(), content.with(TallPlantBlock.HALF, DoubleBlockHalf.UPPER), Block.NOTIFY_ALL);
-                }
-                content.updateNeighbors(world, pos, Block.NOTIFY_NEIGHBORS);
-            } else {
-                world.breakBlock(pos, false);
+            world.setBlockState(pos, Blocks.AIR.getDefaultState(), Block.NOTIFY_ALL); //spaghetti for onStateReplaced method
+            world.setBlockState(pos, content, Block.NOTIFY_ALL);
+            if (content.getBlock() instanceof TallPlantBlock) {
+                world.setBlockState(pos.up(), content.with(TallPlantBlock.HALF, DoubleBlockHalf.UPPER), Block.NOTIFY_ALL);
             }
         } else {
             world.setBlockState(pos, snowState.with(SnowBlock.LAYERS, layers - 1), Block.NOTIFY_ALL);
-            if (!content.isAir()) {
-                content.updateNeighbors(world, pos, Block.NOTIFY_NEIGHBORS);
-            }
         }
+        content.updateNeighbors(world, pos, Block.NOTIFY_NEIGHBORS);
         world.syncWorldEvent(WorldEvents.BLOCK_BROKEN, pos, Block.getRawIdFromState(Blocks.SNOW.getDefaultState()));
     }
+
+    public static void putInSnow(BlockState futureContent, WorldAccess world, BlockPos pos, int layers) {
+        if (futureContent.isIn(ModTags.SNOWLOGGABLE_TAG)) {
+            Block futureContentBlock = futureContent.getBlock();
+            world.setBlockState(pos, ModBlocks.SNOW_WITH_CONTENT.getDefaultState().with(SnowBlock.LAYERS, layers), Block.NOTIFY_LISTENERS, 512);
+            if (futureContentBlock instanceof TallPlantBlock && futureContent.get(TallPlantBlock.HALF) == DoubleBlockHalf.LOWER) {
+                world.setBlockState(pos.up(), futureContent.with(TallPlantBlock.HALF, DoubleBlockHalf.UPPER), Block.NOTIFY_LISTENERS, 512);
+            } else if (futureContent.isIn(BlockTags.FENCES)) {
+                futureContent = getBlockConnectedState(futureContent, world, pos);
+                futureContent.updateNeighbors(world, pos, Block.NOTIFY_NEIGHBORS);
+            }
+            ContentBlockEntity.setContent(futureContent, world, pos);
+        }
+    }
+
+    private static boolean isConnectingBlock(BlockState state) {
+        return state.isIn(BlockTags.FENCES) || state.isIn(BlockTags.FENCE_GATES) || state.isIn(BlockTags.WALLS);
+    }
+
 
     private static BlockState getBlockConnectedState(BlockState connectingBlock, WorldAccess world, BlockPos pos){
         Block block = connectingBlock.getBlock();
@@ -227,7 +132,7 @@ public class SnowHelper {
     private static boolean connectedTo(WorldAccess world, BlockPos pos, Direction from, Block block) {
         BlockState state = world.getBlockState(pos);
         boolean isSolid = state.isSideSolidFullSquare(world, pos, from);
-        boolean isFence =  state.isOf(block) || getContentState(world, pos).isOf(block);
+        boolean isFence =  state.isOf(block) || ContentBlockEntity.getContent(world, pos).isOf(block);
         return isFence || isSolid;
     }
 
@@ -236,29 +141,4 @@ public class SnowHelper {
             worldAccess.playSound(null, pos, soundEvent, SoundCategory.BLOCKS, BlockSoundGroup.SNOW.volume, BlockSoundGroup.SNOW.pitch);
         }
     }
-
-    public static void addSnowloggableBlock(Block block) {
-        POSSIBLE_CONTENT.add(block);
-    }
-
-    public static void addBlocksWithBase(Block block) {
-        BLOCKS_WITH_BASE.add(block);
-    }
-
-    public static void addAllowRandomTick(Block block) {
-        ALLOW_RANDOM_TICK.add(block);
-    }
-
-    public static boolean isRandomTickAllowed(Block block) {
-        return ALLOW_RANDOM_TICK.contains(block);
-    }
-
-    public static boolean contentShouldBreak(int layers, BlockState content) {
-        if (content.isAir()) {
-            return false;
-        }
-        float contentHardness = content.getBlock().getHardness();
-        return layers == 8 ? contentHardness < 0.2F : contentHardness < 0.1F;
-    }
-
 }

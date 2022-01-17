@@ -18,8 +18,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import ss.snowiersnow.block.ModBlocks;
-import ss.snowiersnow.utils.SnowHelper;
+import ss.snowiersnow.blockentity.ContentBlockEntity;
+import ss.snowiersnow.registry.ModBlocks;
 
 @Mixin(TallPlantBlock.class)
 public class TallPlantBlockMixin extends PlantBlock {
@@ -33,7 +33,7 @@ public class TallPlantBlockMixin extends PlantBlock {
 
     @Inject(method = "getStateForNeighborUpdate", at = @At("HEAD"), cancellable = true)
     public void getStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos, CallbackInfoReturnable<BlockState> cir) {
-        BlockState contentDown = SnowHelper.getContentState(world, pos.down());
+        BlockState contentDown = ContentBlockEntity.getContent(world, pos.down());
         if (state.get(HALF) == DoubleBlockHalf.UPPER) {
             if ((contentDown.getBlock() instanceof TallPlantBlock)) {
                 if (contentDown.get(HALF) == DoubleBlockHalf.LOWER) {
@@ -48,11 +48,11 @@ public class TallPlantBlockMixin extends PlantBlock {
         if (state.get(TallPlantBlock.HALF) == DoubleBlockHalf.UPPER) {
             BlockPos posDown = pos.down();
             BlockState stateDown = world.getBlockState(posDown);
-            if (stateDown.isIn(ModBlocks.SNOW_TAG)) {
+            if (stateDown.isOf(ModBlocks.SNOW_WITH_CONTENT)) {
                 if (!player.isCreative()) {
                     dropStack(world, pos, new ItemStack(this.getDefaultState().getBlock()));
                 }
-                SnowHelper.setContent(Blocks.AIR.getDefaultState(), world, posDown);
+                world.setBlockState(pos, Blocks.SNOW.getDefaultState().with(SnowBlock.LAYERS, stateDown.get(SnowBlock.LAYERS)));
                 world.syncWorldEvent(player, WorldEvents.BLOCK_BROKEN, posDown, Block.getRawIdFromState(state));
             }
         }
@@ -65,8 +65,8 @@ public class TallPlantBlockMixin extends PlantBlock {
             cir.setReturnValue(super.canPlaceAt(state, world, pos));
         } else {
             BlockState stateDown = world.getBlockState(pos.down());
-            if (stateDown.isIn(ModBlocks.SNOW_TAG)) {
-                BlockState content = SnowHelper.getContentState(world, pos);
+            if (stateDown.isOf(ModBlocks.SNOW_WITH_CONTENT)) {
+                BlockState content = ContentBlockEntity.getContent(world, pos);
                 if (content.getBlock() instanceof TallPlantBlock) {
                     cir.setReturnValue(content.get(TallPlantBlock.HALF) == DoubleBlockHalf.LOWER);
                 }

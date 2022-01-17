@@ -1,31 +1,23 @@
 package ss.snowiersnow.mixin.block;
 
 
-import net.minecraft.block.*;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.FenceBlock;
+import net.minecraft.block.HorizontalConnectingBlock;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.tag.BlockTags;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import ss.snowiersnow.block.ModBlocks;
-import ss.snowiersnow.utils.SnowHelper;
+import ss.snowiersnow.blockentity.ContentBlockEntity;
 
 @Mixin(FenceBlock.class)
 public class FenceBlockMixin extends HorizontalConnectingBlock {
-
-
     protected FenceBlockMixin(float radius1, float radius2, float boundingHeight1, float boundingHeight2, float collisionHeight, Settings settings) {
         super(radius1, radius2, boundingHeight1, boundingHeight2, collisionHeight, settings);
     }
@@ -33,49 +25,26 @@ public class FenceBlockMixin extends HorizontalConnectingBlock {
     @Shadow
     public boolean canConnect(BlockState state, boolean neighborIsFullSquare, Direction dir) {return false;}
 
-    @Inject(method = "onUse", at = @At("HEAD"), cancellable = true)
-    public void onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit, CallbackInfoReturnable<ActionResult> cir) {
-        if (Block.getBlockFromItem(player.getStackInHand(hand).getItem()) == ModBlocks.SNOW_WITH_CONTENT) {
-            if (SnowHelper.canContain(state)) {
-                if (ModBlocks.SNOW_WITH_CONTENT.canPlaceAt(state, world, pos)) {
-                    SnowHelper.setSnow(state, world, pos);
-                    if (!player.isCreative()) {
-                        player.getStackInHand(hand).decrement(1);
-                    }
-                    cir.setReturnValue(ActionResult.success(world.isClient));
-                }
-            }
-        }
-    }
-//
-//    public boolean canConnect(BlockState state, boolean neighborIsFullSquare, Direction dir) {
-//        Block block = state.getBlock();
-//        boolean bl = this.canConnectToFence(state);
-//        boolean bl2 = block instanceof FenceGateBlock && FenceGateBlock.canWallConnect(state, dir);
-//        return !cannotConnect(state) && neighborIsFullSquare || bl || bl2;
-//    }
-
-
     /**
-     * @author
+     * @author snowier-snow si
      */
     @Overwrite
     public BlockState getPlacementState(ItemPlacementContext ctx) {
-        WorldAccess blockView = ctx.getWorld();
+        WorldAccess world = ctx.getWorld();
         BlockPos blockPos = ctx.getBlockPos();
         FluidState fluidState = ctx.getWorld().getFluidState(ctx.getBlockPos());
         BlockPos northPos = blockPos.north();
         BlockPos eastPos = blockPos.east();
         BlockPos southPos = blockPos.south();
         BlockPos westPos = blockPos.west();
-        BlockState northState = blockView.getBlockState(northPos);
-        BlockState eastState = blockView.getBlockState(eastPos);
-        BlockState southState = blockView.getBlockState(southPos);
-        BlockState westState = blockView.getBlockState(westPos);
-        boolean northConnected = SnowHelper.isContentFence(blockView, northPos) || northState.isSideSolidFullSquare(blockView, northPos, Direction.SOUTH);
-        boolean southConnected = SnowHelper.isContentFence(blockView, southPos) || northState.isSideSolidFullSquare(blockView, southPos, Direction.NORTH);
-        boolean eastConnected = SnowHelper.isContentFence(blockView, eastPos) || northState.isSideSolidFullSquare(blockView, eastPos, Direction.WEST);
-        boolean westConnected = SnowHelper.isContentFence(blockView, westPos) || northState.isSideSolidFullSquare(blockView, westPos, Direction.EAST);
+        BlockState northState = world.getBlockState(northPos);
+        BlockState eastState = world.getBlockState(eastPos);
+        BlockState southState = world.getBlockState(southPos);
+        BlockState westState = world.getBlockState(westPos);
+        boolean northConnected = isNeighbourFence(world, northPos) || northState.isSideSolidFullSquare(world, northPos, Direction.SOUTH);
+        boolean southConnected = isNeighbourFence(world, southPos) || northState.isSideSolidFullSquare(world, southPos, Direction.NORTH);
+        boolean eastConnected = isNeighbourFence(world, eastPos) || northState.isSideSolidFullSquare(world, eastPos, Direction.WEST);
+        boolean westConnected = isNeighbourFence(world, westPos) || northState.isSideSolidFullSquare(world, westPos, Direction.EAST);
         return super.getPlacementState(ctx)
             .with(NORTH, this.canConnect(northState, northConnected, Direction.SOUTH))
             .with(EAST, this.canConnect(eastState, eastConnected, Direction.WEST))
@@ -84,4 +53,7 @@ public class FenceBlockMixin extends HorizontalConnectingBlock {
             .with(WATERLOGGED, fluidState.getFluid() == Fluids.WATER);
     }
 
+    private boolean isNeighbourFence(WorldAccess world, BlockPos pos) {
+        return ContentBlockEntity.getContent(world, pos).isIn(BlockTags.FENCES); //TODO Fences vs Wooden Fences?
+    }
 }

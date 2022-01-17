@@ -3,7 +3,7 @@ package ss.snowiersnow;
 import net.fabricmc.api.ModInitializer;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-import ss.snowiersnow.block.ModBlocks;
+import ss.snowiersnow.registry.ModBlocks;
 
 public class SnowierSnow implements ModInitializer {
     public static final String MOD_NAME = "Snowier snow";

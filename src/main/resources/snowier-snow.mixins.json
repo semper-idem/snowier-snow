@@ -8,8 +8,6 @@
     "ClientPlayerInteractionManagerMixin",
     "FreezeTopLayerFeatureMixin",
     "ServerWorldMixin",
-    "block.AbstractBlockMixin",
-    "block.BambooBlockMixin",
     "block.FenceBlockMixin",
     "block.SnowBlockMixin",
     "block.SnowyBlockMixin",

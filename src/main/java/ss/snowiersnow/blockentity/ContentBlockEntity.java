@@ -8,15 +8,16 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.util.Clearable;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
-import ss.snowiersnow.block.ModBlocks;
+import ss.snowiersnow.registry.ModBlocks;
 
-public class SnowContentBlockEntity extends BlockEntity implements Clearable {
+public class ContentBlockEntity extends BlockEntity implements Clearable {
     public static final String contentTagName = "rawStateId";
     private BlockState content = Blocks.AIR.getDefaultState();
 
-    public SnowContentBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlocks.SNOW_WITH_CONTENT_ENTITY, pos, state);
+    public ContentBlockEntity(BlockPos pos, BlockState state) {
+        super(ModBlocks.CONTENT_ENTITY, pos, state);
     }
 
     public void setContent(BlockState newContent) {
@@ -70,5 +71,18 @@ public class SnowContentBlockEntity extends BlockEntity implements Clearable {
         if (world != null) {
             world.updateListeners(this.getPos(), this.getCachedState(), this.getCachedState(), Block.NOTIFY_ALL);
         }
+    }
+
+    public static ContentBlockEntity getBlockEntity(BlockView world, BlockPos pos) {
+        return world.getBlockEntity(pos, ModBlocks.CONTENT_ENTITY).orElse(null);
+    }
+
+    public static void setContent(BlockState content, BlockView world , BlockPos pos) {
+        getBlockEntity(world, pos).setContent(content);
+    }
+
+    public static BlockState getContent(BlockView world, BlockPos pos) {
+        ContentBlockEntity blockEntity;
+        return (blockEntity = getBlockEntity(world, pos)) != null ? blockEntity.getContent() : Blocks.AIR.getDefaultState();
     }
 }

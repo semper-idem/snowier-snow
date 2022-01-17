@@ -11,7 +11,7 @@ import net.minecraft.world.WorldView;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
-import ss.snowiersnow.utils.SnowHelper;
+import ss.snowiersnow.blockentity.ContentBlockEntity;
 
 @Mixin(WallBlock.class)
 public class WallBlockMixin extends Block {
@@ -26,10 +26,10 @@ public class WallBlockMixin extends Block {
     private BlockState getStateWith(WorldView world, BlockState state, BlockPos pos, BlockState aboveState, boolean north, boolean east, boolean south, boolean west) {
         VoxelShape voxelShape = aboveState.getCollisionShape(world, pos).getFace(Direction.DOWN);
         pos = pos.down();
-        north |= SnowHelper.getContentState(world, pos.north()).getBlock() instanceof WallBlock;
-        east |= SnowHelper.getContentState(world, pos.east()).getBlock() instanceof WallBlock;
-        south |= SnowHelper.getContentState(world, pos.south()).getBlock() instanceof WallBlock;
-        west |= SnowHelper.getContentState(world, pos.west()).getBlock() instanceof WallBlock;
+        north |= ContentBlockEntity.getContent(world, pos.north()).getBlock() instanceof WallBlock;
+        east |= ContentBlockEntity.getContent(world, pos.east()).getBlock() instanceof WallBlock;
+        south |= ContentBlockEntity.getContent(world, pos.south()).getBlock() instanceof WallBlock;
+        west |= ContentBlockEntity.getContent(world, pos.west()).getBlock() instanceof WallBlock;
         BlockState blockState = this.getStateWith(state, north, east, south, west, voxelShape);
         return blockState.with(Properties.UP, this.shouldHavePost(blockState, aboveState, voxelShape));
     }

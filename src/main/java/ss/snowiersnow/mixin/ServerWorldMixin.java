@@ -1,6 +1,5 @@
 package ss.snowiersnow.mixin;
 
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.SnowBlock;
 import net.minecraft.server.world.ServerWorld;
@@ -17,7 +16,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import ss.snowiersnow.block.ModBlocks;
+import ss.snowiersnow.registry.ModTags;
 import ss.snowiersnow.utils.BiomeHelper;
 import ss.snowiersnow.utils.SnowHelper;
 
@@ -38,45 +37,46 @@ public abstract class ServerWorldMixin extends World {
             ),
             method = "tickChunk"
     )
-    private void beforeCanSetSnow(WorldChunk chunk, int randomTickSpeed, CallbackInfo ci) {
-        BlockPos pos = getRandomTopPos(chunk);
-        BlockState state = this.getBlockState(pos);
-        if (BiomeHelper.canSetSnow(this, pos, state)){
-            int layers = 0;
-            if (state.isIn(ModBlocks.SNOW_TAG)) {
-                layers = state.get(SnowBlock.LAYERS);
-                BlockState blockBelow = chunk.getBlockState(pos.down());
-                if (blockBelow.getBlock() instanceof SnowBlock) {
-                    layers = layers + 8;
-                }
-            }
-            if (state.isAir() || SnowHelper.canContain(state) || shouldAccumulate(layers)) {
-                SnowHelper.setOrStackSnow((ServerWorld)(World)this, pos);
+    private void beforeCanSetSnow(WorldChunk world, int randomTickSpeed, CallbackInfo ci) {
+        BlockPos pos = getRandomTopPos(world).up();
+        BlockState stateAboveSurface = this.getBlockState(pos);
+        if (BiomeHelper.canSetSnow(stateAboveSurface, this, pos )){
+            if (shouldAccumulate(calculateSnowLayers(stateAboveSurface, world, pos))) {
+                SnowHelper.addLayer(stateAboveSurface, this, pos);
             }
         }
+    }
+
+    private int calculateSnowLayers(BlockState state, WorldChunk world, BlockPos pos) {
+        int layers = 0;
+        if (state.isIn(ModTags.SNOW_BLOCK_TAG)) {
+            layers = state.get(SnowBlock.LAYERS);
+            BlockState blockBelow = world.getBlockState(pos.down());
+            if (blockBelow.getBlock() instanceof SnowBlock) {
+                layers = layers + 8;
+            }
+        }
+        return layers;
     }
 
     private boolean shouldAccumulate(int layers){
         return Math.random() < ( 1f / (1 + (layers * 4)));
     }
 
-    private BlockPos getRandomTopPos(WorldChunk chunk){
-        BlockPos randomTopBlock =  this.getTopPosition(
+    private BlockPos getRandomTopPos(WorldChunk world){
+        BlockPos pos =  this.getTopPosition(
             Heightmap.Type.MOTION_BLOCKING,
-            this.getRandomPosInChunk(chunk.getPos().getStartX(), 0, chunk.getPos().getStartZ(), 15));
-
-        //Possible performance hit(untested)
-        //TODO test performance, maybe implement new heightmap type, future config option candidate !HashMap BlockState/chance to pass hardcoded or at start
-        if (!chunk.getBlockState(randomTopBlock.down()).isFullCube(chunk, randomTopBlock.down())) {
-            for (int y = randomTopBlock.getY(); y > chunk.getBottomY(); y--){
-                randomTopBlock = randomTopBlock.down();
-                BlockState topBlockState = chunk.getBlockState(randomTopBlock);
-                Block topBlock = topBlockState.getBlock();
-                if(SnowHelper.canContain(topBlock) || topBlockState.isSideSolidFullSquare(chunk, randomTopBlock, Direction.UP)) {
-                    break;
-                }
-            }
+            this.getRandomPosInChunk(world.getPos().getStartX(), 0, world.getPos().getStartZ(), 15)
+        );
+        BlockState surface = this.getBlockState(pos);
+        while (pos.getY() > world.getBottomY() && !isBlockStateBlocking(world, pos, surface)) {
+            pos = pos.down();
+            surface = this.getBlockState(pos);
         }
-        return randomTopBlock;
+        return pos;
+    }
+
+    private boolean isBlockStateBlocking(WorldChunk world, BlockPos pos, BlockState state) {
+        return state.isSideSolidFullSquare(world ,pos, Direction.UP) || state.isSideSolidFullSquare(world ,pos, Direction.UP);
     }
 }

@@ -57,8 +57,8 @@ public class FreezeTopLayerFeatureMixin {
         }
 
         BlockState possibleContent = worldAccess.getBlockState(surfacePos);
-        if (BiomeHelper.canSetSnow(worldAccess, surfacePos, possibleContent)) {
-            SnowHelper.setOrStackSnow(worldAccess, surfacePos);
+        if (BiomeHelper.canSetSnow(possibleContent, worldAccess, surfacePos)) {
+            SnowHelper.addLayer(possibleContent, worldAccess, surfacePos);
             BlockState blockState = worldAccess.getBlockState(floorPos);
             if (blockState.contains(SnowyBlock.SNOWY)) {
                 worldAccess.setBlockState(floorPos, blockState.with(SnowyBlock.SNOWY, true), Block.NOTIFY_LISTENERS);
