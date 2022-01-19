@@ -1,6 +1,7 @@
 package ss.snowiersnow.mixin;
 
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.SnowBlock;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -40,9 +41,15 @@ public abstract class ServerWorldMixin extends World {
     private void beforeCanSetSnow(WorldChunk world, int randomTickSpeed, CallbackInfo ci) {
         BlockPos pos = getRandomTopPos(world).up();
         BlockState stateAboveSurface = this.getBlockState(pos);
-        if (BiomeHelper.canSetSnow(stateAboveSurface, this, pos )){
+        if (BiomeHelper.canAddSnowLayer(stateAboveSurface, this, pos )){
             if (shouldAccumulate(calculateSnowLayers(stateAboveSurface, world, pos))) {
-                SnowHelper.addLayer(stateAboveSurface, this, pos);
+                if (stateAboveSurface.isAir()) {
+                    this.setBlockState(pos, Blocks.SNOW.getDefaultState());
+                } else if (stateAboveSurface.isIn(ModTags.SNOW_BLOCK_TAG)) {
+                    this.setBlockState(pos, stateAboveSurface.with(SnowBlock.LAYERS, stateAboveSurface.get(SnowBlock.LAYERS)));
+                } else {
+                    SnowHelper.putIn(Blocks.SNOW.getDefaultState(), stateAboveSurface, this, pos);
+                }
             }
         }
     }

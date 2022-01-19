@@ -8,17 +8,12 @@ import net.minecraft.world.WorldView;
 import ss.snowiersnow.registry.ModTags;
 
 public class BiomeHelper {
-    public static boolean canSetSnow(BlockState state, WorldView world, BlockPos pos) {
-        if (!doesNotSnow(world, pos)) {
-            if (withinWorldHeight(world, pos)) {
-                if (withinLightLimit(world, pos)) {
-                    if (isSnowOrSnowloggable(state) || state.isAir()) {
-                        return canPlaceAt(world, pos);
-                    }
-                }
-            }
-        }
-        return false;
+    public static boolean canAddSnowLayer(BlockState state, WorldView world, BlockPos pos) {
+       return !doesNotSnow(world, pos) &&
+           withinWorldHeight(world, pos) &&
+           withinLightLimit(world, pos) &&
+           isSnowloggable(state) &&
+           canPlaceAt(world, pos);
     }
 
     private static boolean doesNotSnow(WorldView world, BlockPos pos) {
@@ -33,8 +28,8 @@ public class BiomeHelper {
         return world.getLightLevel(LightType.BLOCK, pos) < 10;
     }
 
-    private static boolean isSnowOrSnowloggable(BlockState state) {
-        return state.isIn(ModTags.SNOW_BLOCK_TAG) || state.isIn(ModTags.SNOWLOGGABLE_TAG);
+    private static boolean isSnowloggable(BlockState state) {
+        return state.isIn(ModTags.SNOW_BLOCK_TAG) || state.isAir() || Snowloggable.canSnowContain(state);
     }
 
     private static boolean canPlaceAt(WorldView world, BlockPos pos) {

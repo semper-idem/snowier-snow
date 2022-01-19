@@ -9,7 +9,6 @@ import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.util.Clearable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
 import ss.snowiersnow.registry.ModBlocks;
 
 public class ContentBlockEntity extends BlockEntity implements Clearable {
@@ -67,9 +66,8 @@ public class ContentBlockEntity extends BlockEntity implements Clearable {
 
     private void updateListeners() {
         this.markDirty();
-        World world = this.getWorld();
-        if (world != null) {
-            world.updateListeners(this.getPos(), this.getCachedState(), this.getCachedState(), Block.NOTIFY_ALL);
+        if (this.world != null) {
+            this.world.updateListeners(this.getPos(), this.getCachedState(), this.getCachedState(), Block.NOTIFY_ALL);
         }
     }
 

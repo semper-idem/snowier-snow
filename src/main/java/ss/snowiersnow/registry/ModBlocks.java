@@ -23,6 +23,6 @@ public class ModBlocks {
     public static void register() {
         Registry.register(Registry.BLOCK, SNOW_WITH_CONTENT_ID, SNOW_WITH_CONTENT);
         Registry.register(Registry.BLOCK_ENTITY_TYPE, SNOW_WITH_CONTENT_ID, CONTENT_ENTITY);
-        //Registry.register(Registry.ITEM, SNOW_WITH_CONTENT_ID, new BlockItem(SNOW_WITH_CONTENT, new FabricItemSettings().group(ItemGroup.DECORATIONS)));
+
     }
 }

@@ -9,6 +9,7 @@
     "FreezeTopLayerFeatureMixin",
     "ServerWorldMixin",
     "block.FenceBlockMixin",
+    "block.PaneBlockMixin",
     "block.SnowBlockMixin",
     "block.SnowyBlockMixin",
     "block.SpreadableBlockMixin",

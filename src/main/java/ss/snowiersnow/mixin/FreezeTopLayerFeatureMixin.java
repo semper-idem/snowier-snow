@@ -1,6 +1,9 @@
 package ss.snowiersnow.mixin;
 
-import net.minecraft.block.*;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.SnowyBlock;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.Heightmap;
@@ -54,14 +57,18 @@ public class FreezeTopLayerFeatureMixin {
     private void setSnow(Biome biome, StructureWorldAccess worldAccess, BlockPos surfacePos, BlockPos floorPos){
         if (biome.canSetIce(worldAccess, floorPos, false)) {
             worldAccess.setBlockState(floorPos, Blocks.ICE.getDefaultState(), Block.NOTIFY_LISTENERS);
-        }
-
-        BlockState possibleContent = worldAccess.getBlockState(surfacePos);
-        if (BiomeHelper.canSetSnow(possibleContent, worldAccess, surfacePos)) {
-            SnowHelper.addLayer(possibleContent, worldAccess, surfacePos);
-            BlockState blockState = worldAccess.getBlockState(floorPos);
-            if (blockState.contains(SnowyBlock.SNOWY)) {
-                worldAccess.setBlockState(floorPos, blockState.with(SnowyBlock.SNOWY, true), Block.NOTIFY_LISTENERS);
+        } else {
+            BlockState possibleContent = worldAccess.getBlockState(surfacePos);
+            if (BiomeHelper.canAddSnowLayer(possibleContent, worldAccess, surfacePos)) {
+                if (possibleContent.isAir()) {
+                    worldAccess.setBlockState(surfacePos, Blocks.SNOW.getDefaultState(), Block.NOTIFY_NEIGHBORS);
+                } else {
+                    SnowHelper.putIn(Blocks.SNOW.getDefaultState(), possibleContent, worldAccess, surfacePos);
+                }
+                BlockState blockState = worldAccess.getBlockState(floorPos);
+                if (blockState.contains(SnowyBlock.SNOWY)) {
+                    worldAccess.setBlockState(floorPos, blockState.with(SnowyBlock.SNOWY, true), Block.NOTIFY_NEIGHBORS);
+                }
             }
         }
     }

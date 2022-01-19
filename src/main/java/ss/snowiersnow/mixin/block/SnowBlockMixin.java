@@ -19,8 +19,8 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
-import ss.snowiersnow.registry.ModTags;
 import ss.snowiersnow.utils.SnowHelper;
+import ss.snowiersnow.utils.Snowloggable;
 
 
 @Mixin(SnowBlock.class)
@@ -48,8 +48,8 @@ public class SnowBlockMixin extends Block {
     @Override
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
         BlockState stateInHand = Block.getBlockFromItem(player.getStackInHand(hand).getItem()).getDefaultState();
-        if (stateInHand.isIn(ModTags.SNOWLOGGABLE_TAG)) {
-            SnowHelper.putInSnow(stateInHand, world, pos, state.get(LAYERS));
+        if (Snowloggable.canSnowContain(stateInHand)) {
+            SnowHelper.putIn(state, stateInHand, world, pos);
             return ActionResult.success(world.isClient);
         }
         return ActionResult.PASS;
