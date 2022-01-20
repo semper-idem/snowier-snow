@@ -28,6 +28,16 @@ public class SnowHelper {
         }
     }
 
+    public static void putInFeature(BlockState content, WorldAccess world, BlockPos pos) {
+        if (canSnowContain(content)) {
+            world.setBlockState(pos, ModBlocks.SNOW_WITH_CONTENT.getDefaultState(), Block.NOTIFY_LISTENERS);
+            ContentBlockEntity.setContent(content, world, pos);
+            if (content.getBlock() instanceof TallPlantBlock) {
+                world.setBlockState(pos.up(), content.with(TallPlantBlock.HALF, DoubleBlockHalf.UPPER), Block.NOTIFY_ALL);
+            }
+        }
+    }
+
     private static void updateSelfAndNeighbors(BlockState content, WorldAccess world, BlockPos pos){
         ContentBlockEntity.setContent(content, world, pos);
         if (!(content.getBlock() instanceof TallPlantBlock)) {

@@ -1,15 +1,19 @@
 package ss.snowiersnow.mixin.block;
 
-import net.minecraft.block.*;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.SnowyBlock;
+import net.minecraft.block.SpreadableBlock;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
 import net.minecraft.world.WorldView;
-import net.minecraft.world.chunk.light.ChunkLightProvider;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
-import ss.snowiersnow.registry.ModBlocks;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import ss.snowiersnow.registry.ModTags;
 
 import java.util.Random;
 
@@ -20,23 +24,17 @@ public class SpreadableBlockMixin extends SnowyBlock {
         super(settings);
     }
 
-    /**
-     * @author snowier-snow si
-     */
-    @Overwrite
-    private static boolean canSurvive(BlockState state, WorldView world, BlockPos pos) {
+    @Shadow
+    private static boolean canSurvive(BlockState state, WorldView world, BlockPos pos) { return true;}
+
+    @Inject(method = "canSurvive", at=@At("HEAD"), cancellable = true)
+    private static void onCanSurvive(BlockState state, WorldView world, BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
         BlockPos posUp = pos.up();
         BlockState stateUp = world.getBlockState(posUp);
-        if (stateUp.isOf(ModBlocks.SNOW_WITH_CONTENT)) {
-            return true;
-        } else if (stateUp.getFluidState().getLevel() == 8) {
-            return false;
-        } else {
-            int i = ChunkLightProvider.getRealisticOpacity(world, state, pos, stateUp, posUp, Direction.UP, stateUp.getOpacity(world, posUp));
-            return i < world.getMaxLightLevel();
+        if (stateUp.isIn(ModTags.SNOW_BLOCK_TAG)) {
+            cir.setReturnValue(true);
         }
     }
-
     /**
      * @author snowier-snow si
      */
@@ -51,9 +49,7 @@ public class SpreadableBlockMixin extends SnowyBlock {
                 for(int i = 0; i < 4; ++i) {
                     BlockPos blockPos = pos.add(random.nextInt(3) - 1, random.nextInt(5) - 3, random.nextInt(3) - 1);
                     if (world.getBlockState(blockPos).isOf(Blocks.DIRT) && canSpread(blockState, world, blockPos)) {
-                        BlockState blockStateUp = world.getBlockState(blockPos.up());
-                        boolean isUpSnow = (blockStateUp.isOf(Blocks.SNOW) || blockStateUp.isOf(ModBlocks.SNOW_WITH_CONTENT));
-                        world.setBlockState(blockPos, (BlockState)blockState.with(SNOWY, isUpSnow));
+                        world.setBlockState(blockPos, blockState.with(SNOWY, world.getBlockState(blockPos.up()).isIn(ModTags.SNOW_BLOCK_TAG)));
                     }
                 }
             }

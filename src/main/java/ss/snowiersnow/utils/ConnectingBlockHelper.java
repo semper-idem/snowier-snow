@@ -15,7 +15,6 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.WorldAccess;
 import ss.snowiersnow.blockentity.ContentBlockEntity;
 import ss.snowiersnow.registry.ModBlocks;
-import ss.snowiersnow.registry.ModTags;
 
 
 public class ConnectingBlockHelper {
@@ -41,46 +40,45 @@ public class ConnectingBlockHelper {
             blockState.isIn(BlockTags.WALLS) ||
             blockState.getBlock() instanceof PaneBlock;
     }
-
-    public static BlockState getConnectingBlockState(BlockState connectingBlockState, WorldAccess world, BlockPos pos) {
-        if (connectingBlockState.isIn(BlockTags.FENCES)) {
-            connectingBlockState = ConnectingBlockHelper.getFenceConnectingBlock(connectingBlockState, world, pos);
-        } else if (connectingBlockState.isIn(BlockTags.WALLS)) {
-            connectingBlockState = ConnectingBlockHelper.getWallConnectingBlock(connectingBlockState, world, pos);
-        } else if (connectingBlockState.getBlock() instanceof PaneBlock) {
-            connectingBlockState = ConnectingBlockHelper.getPaneConnectingBlock(connectingBlockState, world, pos);
+    public static BlockState getConnectingBlockState(BlockState blockState, WorldAccess world, BlockPos pos) {
+        if (blockState.isIn(BlockTags.FENCES)) {
+            blockState = getFence(blockState, world, pos);
+        } else if (blockState.isIn(BlockTags.WALLS)) {
+            blockState = getWall(blockState, world, pos);
+        } else if (blockState.getBlock() instanceof PaneBlock) {
+            blockState = getPane(blockState, world, pos);
         }
-        return connectingBlockState;
+        return blockState;
     }
 
-
-    public static BlockState getFenceConnectingBlock(BlockState fenceState, WorldAccess world, BlockPos pos) {
+    public static BlockState getFence(BlockState connectingBlockState, WorldAccess world, BlockPos pos) {
         boolean north = isFenceConnective(world, pos.north(), Direction.SOUTH);
         boolean south = isFenceConnective(world, pos.south(), Direction.NORTH);
         boolean west = isFenceConnective(world, pos.west(), Direction.EAST);
         boolean east = isFenceConnective(world, pos.east(), Direction.WEST);
-        return fenceState.with(NORTH, north).with(SOUTH, south).with(EAST, east).with(WEST, west);
+        return connectingBlockState.with(NORTH, north).with(SOUTH, south).with(EAST, east).with(WEST, west);
     }
 
-    public static BlockState getPaneConnectingBlock(BlockState paneState, WorldAccess world, BlockPos pos) {
+    public static BlockState getPane(BlockState connectingBlockState, WorldAccess world, BlockPos pos) {
         boolean north = isPaneConnective(world, pos.north(), Direction.SOUTH);
         boolean south = isPaneConnective(world, pos.south(), Direction.NORTH);
         boolean west = isPaneConnective(world, pos.west(), Direction.EAST);
         boolean east = isPaneConnective(world, pos.east(), Direction.WEST);
-        return paneState.with(NORTH, north).with(SOUTH, south).with(EAST, east).with(WEST, west);
+        return connectingBlockState.with(NORTH, north).with(SOUTH, south).with(EAST, east).with(WEST, west);
     }
 
-
-    public static BlockState getWallConnectingBlock(BlockState wallState, WorldAccess world, BlockPos pos) {
+    public static BlockState getWall(BlockState connectingBlockState, WorldAccess world, BlockPos pos) {
         boolean north = isWallConnective(world, pos.north(), Direction.SOUTH);
         boolean south = isWallConnective(world, pos.south(), Direction.NORTH);
         boolean west = isWallConnective(world, pos.west(), Direction.EAST);
         boolean east = isWallConnective(world, pos.east(), Direction.WEST);
         BlockState aboveState = world.getBlockState(pos.up());
         VoxelShape aboveShape = aboveState.getCollisionShape(world, pos).getFace(Direction.DOWN);
-        return getWallWith(wallState, north, east, south, west, aboveShape)
-            .with(UP, shouldHavePost(wallState, aboveState, aboveShape));
+        return getWallWith(connectingBlockState, north, east, south, west, aboveShape)
+            .with(UP, shouldHavePost(connectingBlockState, aboveState, aboveShape));
     }
+
+
 
     public static boolean isFenceConnective(BlockView world, BlockPos pos, Direction direction) {
         BlockState connectsTo = world.getBlockState(pos);
@@ -98,19 +96,24 @@ public class ConnectingBlockHelper {
 
     public static boolean isPaneConnective(BlockView world, BlockPos pos, Direction direction) {
         BlockState connectsTo = world.getBlockState(pos);
-        if (connectsTo.isIn(ModTags.SNOW_BLOCK_TAG)) {
-            BlockState content = ContentBlockEntity.getContent(world, pos);
-            if (content.getBlock() instanceof PaneBlock || content.isIn(BlockTags.WALLS)) {
-                connectsTo = content;
-            }
-        }
         boolean canConnect = !Block.cannotConnect(connectsTo);
-        boolean isSolid = connectsTo.isSideSolidFullSquare(world, pos ,direction);
-        boolean isPane = connectsTo.getBlock() instanceof PaneBlock;
-        boolean isWall = connectsTo.isIn(BlockTags.WALLS);
-        return canConnect && (isSolid || isPane || isWall);
+        return canConnect &&
+            (
+                connectsTo.isSideSolidFullSquare(world, pos ,direction)
+                || isPaneOrWall(connectsTo)
+                || isContentPaneOrWall(connectsTo, world, pos)
+            );
     }
 
+    private static boolean isContentPaneOrWall(BlockState state, BlockView world, BlockPos pos) {
+        if (state.isOf(ModBlocks.SNOW_WITH_CONTENT)) {
+            return isPaneOrWall(ContentBlockEntity.getContent(world, pos));
+        }
+        return false;
+    }
+    private static boolean isPaneOrWall(BlockState state) {
+        return state.getBlock() instanceof PaneBlock || state.isIn(BlockTags.WALLS);
+    }
     public static boolean isWallConnective(BlockView world, BlockPos pos, Direction direction) {
         BlockState connectsTo = world.getBlockState(pos);
         if (connectsTo.isOf(ModBlocks.SNOW_WITH_CONTENT)) {

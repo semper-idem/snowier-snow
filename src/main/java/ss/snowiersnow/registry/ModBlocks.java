@@ -1,9 +1,12 @@
 package ss.snowiersnow.registry;
 
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.item.BlockItem;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import ss.snowiersnow.SnowierSnow;
@@ -23,6 +26,6 @@ public class ModBlocks {
     public static void register() {
         Registry.register(Registry.BLOCK, SNOW_WITH_CONTENT_ID, SNOW_WITH_CONTENT);
         Registry.register(Registry.BLOCK_ENTITY_TYPE, SNOW_WITH_CONTENT_ID, CONTENT_ENTITY);
-
+        Registry.register(Registry.ITEM, SNOW_WITH_CONTENT_ID, new BlockItem(SNOW_WITH_CONTENT, new FabricItemSettings().group(ItemGroup.MISC)));
     }
 }

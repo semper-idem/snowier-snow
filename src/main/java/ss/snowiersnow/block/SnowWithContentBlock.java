@@ -12,10 +12,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.ShovelItem;
+import net.minecraft.item.*;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.util.ActionResult;
@@ -123,13 +120,12 @@ public class SnowWithContentBlock extends SnowBlock implements BlockEntityProvid
     }
 
     private boolean shouldContentBreak(WorldAccess world, BlockPos pos, boolean isSnowFullBlock, BlockState content) {
-        if (content.isAir()) {
-            return false;
-        } else {
+        if (!content.isAir()) {
             float contentHardness = content.getHardness(world, pos);
             float snowHardness = isSnowFullBlock ? 0.2F : 0.1F;
             return contentHardness < snowHardness;
         }
+        return false;
     }
 
     //Crude way to let content grow, could be improved if we knew source of this change
@@ -144,8 +140,10 @@ public class SnowWithContentBlock extends SnowBlock implements BlockEntityProvid
         BlockState content = ContentBlockEntity.getContent(world, pos);
         if (!content.canPlaceAt(world ,pos)) {
             int layers = state.get(LAYERS);
-            ItemScatterer.spawn((World) world, pos.getX(), pos.getY(), pos.getZ(), new ItemStack(content.getBlock()));
-            ((World) world).removeBlockEntity(pos);
+            if (world instanceof World) {
+                ItemScatterer.spawn((World) world, pos.getX(), pos.getY(), pos.getZ(), new ItemStack(content.getBlock()));
+            }
+            world.removeBlock(pos, false);
             world.setBlockState(pos, Blocks.SNOW.getDefaultState().with(LAYERS, layers), Block.NOTIFY_NEIGHBORS);
         } else {
             ContentBlockEntity.setContent(content.getStateForNeighborUpdate(direction, neighborState, world, pos, neighborPos), world, pos);
