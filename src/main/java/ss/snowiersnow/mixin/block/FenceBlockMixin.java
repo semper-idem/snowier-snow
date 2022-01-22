@@ -45,7 +45,6 @@ public class FenceBlockMixin extends HorizontalConnectingBlock {
         if (state.get(WATERLOGGED)) {
             world.createAndScheduleFluidTick(pos, Fluids.WATER, Fluids.WATER.getTickRate(world));
         }
-
         return direction.getAxis().getType() == Direction.Type.HORIZONTAL ?
             state.with(FACING_PROPERTIES.get(direction), ConnectingBlockHelper.isFenceConnective(world, neighborPos, direction.getOpposite())) :
             super.getStateForNeighborUpdate(state, direction, neighborState, world, pos, neighborPos);

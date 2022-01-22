@@ -2,15 +2,16 @@ package ss.snowiersnow.utils;
 
 import net.minecraft.block.*;
 import net.minecraft.block.enums.DoubleBlockHalf;
+import net.minecraft.item.AutomaticItemPlacementContext;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldAccess;
-import net.minecraft.world.WorldEvents;
+import net.minecraft.util.math.Direction;
+import net.minecraft.world.*;
 import ss.snowiersnow.blockentity.ContentBlockEntity;
 import ss.snowiersnow.registry.ModBlocks;
+import ss.snowiersnow.registry.ModTags;
 
 import static ss.snowiersnow.utils.Snowloggable.canSnowContain;
 
@@ -21,8 +22,10 @@ public class SnowHelper {
             world.setBlockState(pos, ModBlocks.SNOW_WITH_CONTENT.getDefaultState().with(SnowBlock.LAYERS, snowState.get(SnowBlock.LAYERS)), Block.NOTIFY_ALL);
             if (content.getBlock() instanceof TallPlantBlock) {
                 world.setBlockState(pos.up(), content.with(TallPlantBlock.HALF, DoubleBlockHalf.UPPER), Block.NOTIFY_ALL);
-            } else if (ConnectingBlockHelper.isConnectingBlockState(content)) {
-                content = ConnectingBlockHelper.getConnectingBlockState(content, world, pos);
+            }
+            if (world instanceof World) {
+                BlockState placementContent = content.getBlock().getPlacementState(new AutomaticItemPlacementContext((World) world, pos, Direction.UP, content.getBlock().asItem().getDefaultStack(), Direction.DOWN));
+                content = placementContent != null ? placementContent : content;
             }
             updateSelfAndNeighbors(content, world, pos);
         }
@@ -57,7 +60,7 @@ public class SnowHelper {
 
     private static void removeSnowLayer(BlockState contentState,  World world, BlockPos pos) {
         world.removeBlockEntity(pos);
-        //world.setBlockState(pos, Blocks.AIR.getDefaultState(), Block.NOTIFY_ALL); //spaghetti for onStateReplaced method
+        world.setBlockState(pos, Blocks.AIR.getDefaultState(), Block.NOTIFY_ALL);
         world.setBlockState(pos, contentState, Block.NOTIFY_ALL);
         if (contentState.getBlock() instanceof TallPlantBlock) {
             world.setBlockState(pos.up(), contentState.with(TallPlantBlock.HALF, DoubleBlockHalf.UPPER), Block.NOTIFY_ALL);
@@ -75,5 +78,31 @@ public class SnowHelper {
             worldAccess.playSound(null, pos, soundEvent, SoundCategory.BLOCKS, BlockSoundGroup.SNOW.volume, BlockSoundGroup.SNOW.pitch);
         }
     }
+    public static boolean canAddSnowLayer(BlockState state, WorldView world, BlockPos pos) {
+        return !doesNotSnow(world, pos) &&
+            withinWorldHeight(world, pos) &&
+            withinLightLimit(world, pos) &&
+            isSnowloggable(state) &&
+            canPlaceAt(world, pos);
+    }
 
+    private static boolean doesNotSnow(WorldView world, BlockPos pos) {
+        return world.getBiome(pos).doesNotSnow(pos);
+    }
+
+    private static boolean withinWorldHeight(WorldView world, BlockPos pos) {
+        return pos.getY() >= world.getBottomY() && pos.getY() < world.getTopY();
+    }
+
+    private static boolean withinLightLimit(WorldView world, BlockPos pos) {
+        return world.getLightLevel(LightType.BLOCK, pos) < 10;
+    }
+
+    private static boolean isSnowloggable(BlockState state) {
+        return state.isIn(ModTags.SNOW_BLOCK_TAG) || state.isAir() || Snowloggable.canSnowContain(state);
+    }
+
+    private static boolean canPlaceAt(WorldView world, BlockPos pos) {
+        return Blocks.SNOW.getDefaultState().canPlaceAt(world, pos);
+    }
 }

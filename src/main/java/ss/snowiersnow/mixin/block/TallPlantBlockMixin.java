@@ -52,7 +52,7 @@ public class TallPlantBlockMixin extends PlantBlock {
                 if (!player.isCreative()) {
                     dropStack(world, pos, new ItemStack(this.getDefaultState().getBlock()));
                 }
-                world.setBlockState(pos, Blocks.SNOW.getDefaultState().with(SnowBlock.LAYERS, stateDown.get(SnowBlock.LAYERS)));
+                world.setBlockState(posDown, Blocks.SNOW.getDefaultState().with(SnowBlock.LAYERS, stateDown.get(SnowBlock.LAYERS)));
                 world.syncWorldEvent(player, WorldEvents.BLOCK_BROKEN, posDown, Block.getRawIdFromState(state));
             }
         }

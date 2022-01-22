@@ -39,7 +39,7 @@ public class FreezeTopLayerFeatureMixin {
                 if (y != yNoLeaves) {
                     onSurfacePos.set(x, y, z);
                     surfacePos.set(onSurfacePos).move(Direction.DOWN, 1);
-                    setSnowOnTree(structureWorldAccess.getBiome(onSurfacePos), structureWorldAccess, onSurfacePos, surfacePos);
+                    setSnowOnTree(structureWorldAccess.getBiome(onSurfacePos), structureWorldAccess, onSurfacePos);
                 }
                 onSurfacePosNoLeaves.set(x, yNoLeaves, z);
                 surfacePosNoLeaves.set(onSurfacePosNoLeaves).move(Direction.DOWN, 1);
@@ -49,7 +49,7 @@ public class FreezeTopLayerFeatureMixin {
         return true;
     }
 
-    private void setSnowOnTree(Biome biome, StructureWorldAccess worldAccess, BlockPos onSurfacePos, BlockPos surfacePos){
+    private void setSnowOnTree(Biome biome, StructureWorldAccess worldAccess, BlockPos onSurfacePos){
         if (canSnowOnTree(biome, worldAccess, onSurfacePos)) {
             worldAccess.setBlockState(onSurfacePos, Blocks.SNOW.getDefaultState(), Block.NOTIFY_LISTENERS);
         }

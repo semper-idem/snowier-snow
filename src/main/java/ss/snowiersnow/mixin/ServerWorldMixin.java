@@ -18,7 +18,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import ss.snowiersnow.registry.ModTags;
-import ss.snowiersnow.utils.BiomeHelper;
 import ss.snowiersnow.utils.SnowHelper;
 
 import java.util.function.Supplier;
@@ -41,12 +40,12 @@ public abstract class ServerWorldMixin extends World {
     private void beforeCanSetSnow(WorldChunk world, int randomTickSpeed, CallbackInfo ci) {
         BlockPos pos = getRandomTopPos(world).up();
         BlockState stateAboveSurface = this.getBlockState(pos);
-        if (BiomeHelper.canAddSnowLayer(stateAboveSurface, this, pos )){
+        if (SnowHelper.canAddSnowLayer(stateAboveSurface, this, pos )){
             if (shouldAccumulate(calculateSnowLayers(stateAboveSurface, world, pos))) {
-                if (stateAboveSurface.isAir()) {
+                if (stateAboveSurface.isIn(ModTags.SNOW_BLOCK_TAG)) {
+                    this.setBlockState(pos, stateAboveSurface.with(SnowBlock.LAYERS, stateAboveSurface.get(SnowBlock.LAYERS) + 1));
+                } else if (stateAboveSurface.isAir()) {
                     this.setBlockState(pos, Blocks.SNOW.getDefaultState());
-                } else if (stateAboveSurface.isIn(ModTags.SNOW_BLOCK_TAG)) {
-                    this.setBlockState(pos, stateAboveSurface.with(SnowBlock.LAYERS, stateAboveSurface.get(SnowBlock.LAYERS)));
                 } else {
                     SnowHelper.putIn(Blocks.SNOW.getDefaultState(), stateAboveSurface, this, pos);
                 }

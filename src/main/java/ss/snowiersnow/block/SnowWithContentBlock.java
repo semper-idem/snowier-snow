@@ -111,7 +111,6 @@ public class SnowWithContentBlock extends SnowBlock implements BlockEntityProvid
         ((World)world).removeBlockEntity(pos);
         int layers = state.get(LAYERS);
         if (shouldContentBreak(world, pos, (layers == 8), content)) { //TODO Make configurable
-//            world.breakBlock(pos, false); if tall block doesnt work this could be the cause
             world.setBlockState(pos, Blocks.SNOW.getDefaultState().with(LAYERS, layers), Block.NOTIFY_NEIGHBORS);
             ItemScatterer.spawn((World)world, pos.getX(), pos.getY(), pos.getZ(), new ItemStack(content.getBlock()));
         } else {
@@ -146,8 +145,8 @@ public class SnowWithContentBlock extends SnowBlock implements BlockEntityProvid
             world.removeBlock(pos, false);
             world.setBlockState(pos, Blocks.SNOW.getDefaultState().with(LAYERS, layers), Block.NOTIFY_NEIGHBORS);
         } else {
-            ContentBlockEntity.setContent(content.getStateForNeighborUpdate(direction, neighborState, world, pos, neighborPos), world, pos);
-        }
+                ContentBlockEntity.setContent(content.getStateForNeighborUpdate(direction, neighborState, world, pos, neighborPos), world, pos);
+         }
         return !state.canPlaceAt(world, pos) ? Blocks.AIR.getDefaultState() : state;
     }
 
@@ -160,11 +159,9 @@ public class SnowWithContentBlock extends SnowBlock implements BlockEntityProvid
             if (world.getLightLevel(LightType.BLOCK, pos) > 11) {
                 SnowHelper.meltLayer(state, world, pos);
             } else {
-                if (content.canPlaceAt(world, pos)) {
-                    if (content.hasRandomTicks() && content.isIn(ModTags.TICK_ALLOWED_TAG)) {
-                        content.randomTick(world, pos, random);
-                    }
-                } else {
+                if (content.canPlaceAt(world, pos) && content.hasRandomTicks() ){//&& content.isIn(ModTags.TICKING_ALLOWED)) {
+                    content.randomTick(world, pos, random);
+                } else if (!content.canPlaceAt(world, pos)){
                     ItemScatterer.spawn(world, pos.getX(), pos.getY(), pos.getZ(), new ItemStack(content.getBlock()));
                     int layers = state.get(LAYERS);
                     world.setBlockState(pos, Blocks.SNOW.getDefaultState().with(LAYERS, layers));
@@ -206,22 +203,14 @@ public class SnowWithContentBlock extends SnowBlock implements BlockEntityProvid
     }
 
     private ActionResult onSnowLayerUse(BlockState state, World world, BlockPos pos, PlayerEntity player, ItemStack stackInHand, int layers) {
-        if (layers < 8 || state.canPlaceAt(world, pos.up())) {
-            if (layers < 8) {
-                world.setBlockState(pos, state.with(LAYERS, layers + 1));
-            } else {
-                world.setBlockState(pos, Blocks.SNOW.getDefaultState());
+        if (layers < 8) {
+            world.setBlockState(pos, state.with(LAYERS, layers + 1));
+            if (!player.isCreative()) {
+                stackInHand.decrement(1);
             }
-            consumeSnow(stackInHand, player.isCreative());
             return ActionResult.success(world.isClient);
         }
         return ActionResult.PASS;
-    }
-
-    private void consumeSnow(ItemStack snowInHand, boolean isCreative) {
-        if (!isCreative) {
-            snowInHand.decrement(1);
-        }
     }
 
     private ActionResult onShovelUse(BlockState state, World world, BlockPos pos, PlayerEntity player, ItemStack stackInHand) {
