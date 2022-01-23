@@ -4,8 +4,6 @@ import net.minecraft.block.BambooBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.enums.BambooLeaves;
-import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.IntProperty;
 import net.minecraft.tag.BlockTags;
 import net.minecraft.util.math.BlockPos;
@@ -23,9 +21,7 @@ import java.util.Random;
 
 @Mixin(BambooBlock.class)
 public class BambooBlockMixin extends Block {
-    private final static EnumProperty<BambooLeaves> LEAVES = BambooBlock.LEAVES;
     private final static IntProperty AGE = BambooBlock.AGE;
-    private final static IntProperty STAGE = BambooBlock.STAGE;
 
     public BambooBlockMixin(Settings settings) {
         super(settings);
@@ -40,15 +36,25 @@ public class BambooBlockMixin extends Block {
 
     @Inject(method = "updateLeaves", at = @At("TAIL"))
     public void updateLeaves(BlockState state, World world, BlockPos pos, Random random, int height, CallbackInfo ci) {
-        pos = pos.down(4);
-        BlockState blockState = world.getBlockState(pos);
-        if (blockState.isOf(ModBlocks.SNOW_WITH_CONTENT)) {
-            blockState = ContentBlockEntity.getContent(world, pos);
-            if (blockState.isOf(Blocks.BAMBOO)) {
-                BambooLeaves bambooLeaves = BambooLeaves.NONE;
-                int j = (height < 11 || !(random.nextFloat() < 0.25F)) && height != 15 ? 0 : 1;
-                ContentBlockEntity.setContent((this.getDefaultState().with(AGE, state.get(AGE))).with(LEAVES, bambooLeaves).with(STAGE, j), world, pos);
+        if (state.get(AGE) == 1) {
+            pos = pos.down(3);
+            BlockState blockState = world.getBlockState(pos);
+            if (blockState.isOf(ModBlocks.SNOW_WITH_CONTENT)) {
+                updateLeavesInSnow(world, pos);
+            } else {
+                pos = pos.down();
+                blockState = world.getBlockState(pos);
+                if (blockState.isOf(ModBlocks.SNOW_WITH_CONTENT)) {
+                    updateLeavesInSnow(world, pos);
+                }
             }
+        }
+    }
+
+    private void updateLeavesInSnow( World world, BlockPos pos){
+        BlockState state = ContentBlockEntity.getContent(world, pos);
+        if (state.isOf(Blocks.BAMBOO)) {
+            ContentBlockEntity.setContent((this.getDefaultState().with(AGE, state.get(AGE))), world, pos);
         }
     }
 }

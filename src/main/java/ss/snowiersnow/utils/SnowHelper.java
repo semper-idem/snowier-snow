@@ -21,7 +21,9 @@ public class SnowHelper {
         if (canSnowContain(content)) {
             world.setBlockState(pos, ModBlocks.SNOW_WITH_CONTENT.getDefaultState().with(SnowBlock.LAYERS, snowState.get(SnowBlock.LAYERS)), Block.NOTIFY_ALL);
             if (content.getBlock() instanceof TallPlantBlock) {
-                world.setBlockState(pos.up(), content.with(TallPlantBlock.HALF, DoubleBlockHalf.UPPER), Block.NOTIFY_ALL);
+                if (world.getBlockState(pos.up()).isAir()) {
+                    world.setBlockState(pos.up(), content.with(TallPlantBlock.HALF, DoubleBlockHalf.UPPER), Block.NOTIFY_NEIGHBORS);
+                }
             }
             if (world instanceof World) {
                 BlockState placementContent = content.getBlock().getPlacementState(new AutomaticItemPlacementContext((World) world, pos, Direction.UP, content.getBlock().asItem().getDefaultStack(), Direction.DOWN));
