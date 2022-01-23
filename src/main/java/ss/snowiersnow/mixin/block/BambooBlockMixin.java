@@ -40,13 +40,13 @@ public class BambooBlockMixin extends Block {
 
     @Inject(method = "updateLeaves", at = @At("TAIL"))
     public void updateLeaves(BlockState state, World world, BlockPos pos, Random random, int height, CallbackInfo ci) {
-        pos = pos.down();
+        pos = pos.down(4);
         BlockState blockState = world.getBlockState(pos);
-        BambooLeaves bambooLeaves = BambooLeaves.NONE;
-        int j = (height < 11 || !(random.nextFloat() < 0.25F)) && height != 15 ? 0 : 1;
         if (blockState.isOf(ModBlocks.SNOW_WITH_CONTENT)) {
             blockState = ContentBlockEntity.getContent(world, pos);
             if (blockState.isOf(Blocks.BAMBOO)) {
+                BambooLeaves bambooLeaves = BambooLeaves.NONE;
+                int j = (height < 11 || !(random.nextFloat() < 0.25F)) && height != 15 ? 0 : 1;
                 ContentBlockEntity.setContent((this.getDefaultState().with(AGE, state.get(AGE))).with(LEAVES, bambooLeaves).with(STAGE, j), world, pos);
             }
         }
