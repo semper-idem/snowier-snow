@@ -10,6 +10,7 @@ import net.minecraft.util.Clearable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.BlockView;
 import ss.snowiersnow.registry.ModBlocks;
+import ss.snowiersnow.utils.Snowloggable;
 
 public class ContentBlockEntity extends BlockEntity implements Clearable {
     public static final String contentTagName = "rawStateId";
@@ -37,7 +38,8 @@ public class ContentBlockEntity extends BlockEntity implements Clearable {
     @Override
     public void readNbt(NbtCompound tag) {
         super.readNbt(tag);
-        content = getStateOfId(tag.getInt(contentTagName));
+        BlockState contentFromTag = getStateOfId(tag.getInt(contentTagName));
+        content = Snowloggable.canSnowContain(contentFromTag) ? contentFromTag : Blocks.AIR.getDefaultState();
     }
 
     private int getIdOfState(BlockState state) {

@@ -83,6 +83,6 @@ public abstract class ServerWorldMixin extends World {
     }
 
     private boolean isBlockStateBlocking(WorldChunk world, BlockPos pos, BlockState state) {
-        return state.isSideSolidFullSquare(world ,pos, Direction.UP) || state.isSideSolidFullSquare(world ,pos, Direction.UP);
+        return state.isSideSolidFullSquare(world ,pos, Direction.UP) || state.isSideSolidFullSquare(world ,pos, Direction.DOWN);
     }
 }

@@ -38,7 +38,6 @@ public class BambooBlockMixin extends Block {
                 || ContentBlockEntity.getContent(world, pos.down()).isIn(BlockTags.BAMBOO_PLANTABLE_ON));
     }
 
-
     @Inject(method = "updateLeaves", at = @At("TAIL"))
     public void updateLeaves(BlockState state, World world, BlockPos pos, Random random, int height, CallbackInfo ci) {
         pos = pos.down();

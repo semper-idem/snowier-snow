@@ -19,7 +19,8 @@ import ss.snowiersnow.utils.Snowloggable;
 @Mixin(FreezeTopLayerFeature.class)
 public class FreezeTopLayerFeatureMixin {
     /**
-     * @author snowier-snow akio
+     * @author snowier-snow si
+     * @reason add snow below trees and snowlog blocks
      */
     @Overwrite
     public boolean generate(FeatureContext<DefaultFeatureConfig> context) {
@@ -66,8 +67,8 @@ public class FreezeTopLayerFeatureMixin {
             worldAccess.setBlockState(surfacePos, Blocks.ICE.getDefaultState(), Block.NOTIFY_LISTENERS);
         }
         else if (canSnow(biome, worldAccess, onSurfacePos)) {
-                setSnow(worldAccess, onSurfacePos);
-                setSnowy(worldAccess, surfacePos);
+            setSnow(worldAccess, onSurfacePos);
+            setSnowy(worldAccess, surfacePos);
         }
     }
 

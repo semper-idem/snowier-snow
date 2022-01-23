@@ -26,7 +26,6 @@ public class SnowBlockEntityRenderer implements BlockEntityRenderer<ContentBlock
     public void render(ContentBlockEntity entity, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
         if (entity.getCachedState().get(SnowBlock.LAYERS) < 8) {
             BlockState content = entity.getContent();
-        
             if (!content.isAir()) {
                 RENDER_MANAGER.renderBlock(
                     content,

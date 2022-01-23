@@ -28,6 +28,7 @@ public class SnowHelper {
                 content = placementContent != null ? placementContent : content;
             }
             updateSelfAndNeighbors(content, world, pos);
+
         }
     }
 
@@ -44,7 +45,11 @@ public class SnowHelper {
     private static void updateSelfAndNeighbors(BlockState content, WorldAccess world, BlockPos pos){
         ContentBlockEntity.setContent(content, world, pos);
         if (!(content.getBlock() instanceof TallPlantBlock)) {
-            content.updateNeighbors(world, pos, Block.NOTIFY_ALL);
+            content.updateNeighbors(world, pos, Block.NOTIFY_NEIGHBORS);
+        }
+        BlockState above = world.getBlockState(pos.down());
+        if (above.contains(SnowyBlock.SNOWY)) {
+            world.setBlockState(pos.down(), above.with(SnowyBlock.SNOWY, true), Block.NOTIFY_NEIGHBORS);
         }
     }
 

@@ -9,9 +9,11 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.WorldView;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
-import ss.snowiersnow.blockentity.ContentBlockEntity;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import ss.snowiersnow.utils.ConnectingBlockHelper;
 
 @Mixin(WallBlock.class)
 public class WallBlockMixin extends Block {
@@ -19,21 +21,18 @@ public class WallBlockMixin extends Block {
     public WallBlockMixin(Settings settings) {
         super(settings);
     }
-    /**
-     * @author snowier-snow si
-     */
-    @Overwrite
-    private BlockState getStateWith(WorldView world, BlockState state, BlockPos pos, BlockState aboveState, boolean north, boolean east, boolean south, boolean west) {
+
+    @Inject( method = "getStateWith(Lnet/minecraft/world/WorldView;Lnet/minecraft/block/BlockState;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;ZZZZ)Lnet/minecraft/block/BlockState;", at = @At("RETURN"), cancellable = true)
+    private void getStateWith(WorldView world, BlockState state, BlockPos pos, BlockState aboveState, boolean north, boolean east, boolean south, boolean west, CallbackInfoReturnable<BlockState> cir) {
         VoxelShape voxelShape = aboveState.getCollisionShape(world, pos).getFace(Direction.DOWN);
         pos = pos.down();
-        north |= ContentBlockEntity.getContent(world, pos.north()).getBlock() instanceof WallBlock;
-        east |= ContentBlockEntity.getContent(world, pos.east()).getBlock() instanceof WallBlock;
-        south |= ContentBlockEntity.getContent(world, pos.south()).getBlock() instanceof WallBlock;
-        west |= ContentBlockEntity.getContent(world, pos.west()).getBlock() instanceof WallBlock;
+        north |= ConnectingBlockHelper.isWallConnective(world, pos.north(), Direction.SOUTH);
+        east |= ConnectingBlockHelper.isWallConnective(world, pos.east(), Direction.WEST);
+        south |= ConnectingBlockHelper.isWallConnective(world, pos.south(), Direction.NORTH);
+        west |= ConnectingBlockHelper.isWallConnective(world, pos.west(), Direction.EAST);
         BlockState blockState = this.getStateWith(state, north, east, south, west, voxelShape);
-        return blockState.with(Properties.UP, this.shouldHavePost(blockState, aboveState, voxelShape));
+        cir.setReturnValue(blockState.with(Properties.UP, this.shouldHavePost(blockState, aboveState, voxelShape)));
     }
-
     @Shadow
     private boolean shouldHavePost(BlockState state, BlockState aboveState, VoxelShape aboveShape) { return true;}
 

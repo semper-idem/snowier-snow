@@ -145,9 +145,15 @@ public class SnowWithContentBlock extends SnowBlock implements BlockEntityProvid
             world.removeBlock(pos, false);
             world.setBlockState(pos, Blocks.SNOW.getDefaultState().with(LAYERS, layers), Block.NOTIFY_NEIGHBORS);
         } else {
-                ContentBlockEntity.setContent(content.getStateForNeighborUpdate(direction, neighborState, world, pos, neighborPos), world, pos);
+            ContentBlockEntity.setContent(content.getStateForNeighborUpdate(direction, neighborState, world, pos, neighborPos), world, pos);
          }
-        return !state.canPlaceAt(world, pos) ? Blocks.AIR.getDefaultState() : state;
+        if (!state.canPlaceAt(world, pos)) {
+            world.setBlockState(pos, Blocks.AIR.getDefaultState(), Block.NO_REDRAW);
+            world.setBlockState(pos, content, Block.NOTIFY_NEIGHBORS);
+            return content;
+        } else {
+            return state;
+        }
     }
 
 

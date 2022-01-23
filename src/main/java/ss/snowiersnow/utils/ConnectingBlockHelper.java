@@ -2,6 +2,7 @@ package ss.snowiersnow.utils;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.FenceGateBlock;
 import net.minecraft.block.PaneBlock;
 import net.minecraft.tag.BlockTags;
 import net.minecraft.util.math.BlockPos;
@@ -25,7 +26,8 @@ public class ConnectingBlockHelper {
         boolean canConnect = !Block.cannotConnect(connectsTo);
         boolean isSolid = connectsTo.isSideSolidFullSquare(world, pos ,direction);
         boolean isFence = connectsTo.isIn(BlockTags.FENCES);
-        return canConnect && (isSolid || isFence);
+        boolean isFenceGate = connectsTo.getBlock() instanceof FenceGateBlock && FenceGateBlock.canWallConnect(connectsTo, direction);
+        return canConnect && (isSolid || isFence || isFenceGate);
     }
 
     public static boolean isPaneConnective(BlockView world, BlockPos pos, Direction direction) {
@@ -34,8 +36,21 @@ public class ConnectingBlockHelper {
         return canConnect &&
             (
                 connectsTo.isSideSolidFullSquare(world, pos ,direction)
-                || isPaneOrWall(connectsTo)
-                || isContentPaneOrWall(connectsTo, world, pos)
+                    || isPaneOrWall(connectsTo)
+                    || isContentPaneOrWall(connectsTo, world, pos)
+            );
+    }
+
+    public static boolean isWallConnective(BlockView world, BlockPos pos, Direction direction) {
+        BlockState connectsTo = world.getBlockState(pos);
+        boolean canConnect = !Block.cannotConnect(connectsTo);
+        boolean isFenceGate = connectsTo.getBlock() instanceof FenceGateBlock && FenceGateBlock.canWallConnect(connectsTo, direction);
+        return canConnect &&
+            (
+                connectsTo.isSideSolidFullSquare(world, pos ,direction)
+                    || isPaneOrWall(connectsTo)
+                    || isContentPaneOrWall(connectsTo, world, pos)
+                    || isFenceGate
             );
     }
 

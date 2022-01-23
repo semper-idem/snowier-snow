@@ -25,11 +25,8 @@ import ss.snowiersnow.utils.Snowloggable;
 
 @Mixin(SnowBlock.class)
 public class SnowBlockMixin extends Block {
-
-    @Final
-    @Shadow public static IntProperty LAYERS;
-    @Final
-    @Shadow protected static VoxelShape[] LAYERS_TO_SHAPE;
+    @Final @Shadow public static IntProperty LAYERS;
+    @Final @Shadow protected static VoxelShape[] LAYERS_TO_SHAPE;
 
     public SnowBlockMixin(Settings settings) {
         super(settings);
@@ -37,6 +34,7 @@ public class SnowBlockMixin extends Block {
 
     /**
      * @author snowier-snow si
+     * @reason bedrock-esq deeper snow
      */
     @Nullable
     @Overwrite
